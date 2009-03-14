@@ -1,0 +1,15 @@
+#include "IRCEnvironment.h"
+
+// memdbgon must be the last include file in a .cpp file!!!
+#include "tier0/memdbgon.h"
+
+namespace SteamIRC
+{
+	CIRCEnvironment::CIRCEnvironment()
+	{
+	}
+
+	CIRCEnvironment::~CIRCEnvironment(void)
+	{
+	}
+}
