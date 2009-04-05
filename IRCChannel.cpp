@@ -5,15 +5,8 @@
 
 namespace SteamIRC
 {
-	CIRCChannel::CIRCChannel() : isJoined(false)
+	CIRCChannel::CIRCChannel(CIRCEnvironment& env, String name) : env_(env), name_(name)
 	{
-	}
-
-	void CIRCChannel::Join(String name)
-	{
-		Name = name;
-		ircIO->JoinChannel(name);
-		isJoined = true;
 	}
 
 	void CIRCChannel::Part()
@@ -22,12 +15,6 @@ namespace SteamIRC
 		isJoined = false;
 	}
 		
-
-	void CIRCChannel::Chat(String message)
-	{
-		ircIO->Chat(Name, message);
-	}
-
 	CIRCChannel::~CIRCChannel(void)
 	{
 	}

@@ -1,9 +1,9 @@
 #pragma once
 
-// I call this ugly. Not gonna bother explaining the reason
+
 namespace SteamIRC
 {
-	class CIRCMessageIO;
+	class CIRCEnvironment;
 }
 
 #define _WINSOCKAPI_
@@ -18,9 +18,9 @@ namespace SteamIRC
 		CIRCConnectedObject();
 		virtual ~CIRCConnectedObject(void);
 	protected:
-		static CIRCMessageIO* ircIO;
+		static CIRCEnvironment* ircIO;
 	};
 }
 
-#include "IRCMessageIO.h"
+#include "IRCEnvironment.h"
 

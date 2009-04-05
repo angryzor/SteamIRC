@@ -56,6 +56,30 @@ namespace SteamIRC
 		ERR_RESTRICTED = 484, ERR_UNIQOPPRIVSNEEDED = 485, ERR_NOOPERHOST = 491, ERR_UMODEUNKNOWNFLAG = 501, ERR_USERSDONTMATCH = 502
 	};
 
+	struct IRCOrigin {
+		IRCOrigin(String str) {
+			int iat(str.Find("@"));
+			if(iat == -1) {
+				addr = str;
+				return;
+			}
+			else addr = str.substr(iat + 1);
+
+			int iexcl = str.Find("!");
+			if(iexcl == -1)
+				user = str.substr(,iat);
+			else {
+				nick = str.substr(,iexcl);
+				user = str.substr(iexcl+1, iat-iexcl);
+			}
+		}
+		String toStr() {
+			return nick + String("!") + user + String("@") + addr;
+		}
+		String nick;
+		String user;
+		String addr;
+	};
 
 	class IRCMessage
 	{
@@ -75,7 +99,7 @@ namespace SteamIRC
 		virtual Command LookupStringToCommand(String& str);
 		virtual String LookupCommandToString(Command cmd);
 	public:
-		String Origin;
+		IRCOrigin Origin;
 		String Parameters[15]; // a message can have a maximum of 15 params
 		Command Cmnd;
 	private:

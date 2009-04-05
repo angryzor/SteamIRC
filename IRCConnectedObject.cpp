@@ -10,5 +10,5 @@ namespace SteamIRC
 	{
 	}
 
-	CIRCMessageIO* CIRCConnectedObject::ircIO = NULL;
+	CIRCEnvironment* CIRCConnectedObject::ircIO = NULL;
 }

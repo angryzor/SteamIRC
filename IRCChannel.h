@@ -5,17 +5,14 @@
 namespace SteamIRC
 {
 	class CIRCChannel :
-		public CIRCConnectedObject
+		public CIRCContext, CIRCConnectedObject
 	{
 	public:
-		CIRCChannel();
+		CIRCChannel(CIRCEnvironment& env, String name);
 		virtual ~CIRCChannel(void);
-		virtual void Join(String name);
-		virtual void Part();
-		virtual void Chat(String message);
-		bool isJoined;
-		String Name;
+		String get_name();
 	private:
-
+		String name_;
+		CIRCEnvironment& env_;
 	};
 }

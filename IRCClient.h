@@ -1,23 +1,23 @@
 #pragma once
-namespace SteamIRC
-{
-	class CIRCClient;
-}
+//namespace SteamIRC
+//{
+//	class CIRCClient;
+//}
 
 #include "TCPClient.h"
 #include "IRCDataStructures.h"
 #include "IRCMessage.h"
-#include "IRCConnectedObject.h"
+#include "IRCEnvironment.h"
 
 
 namespace SteamIRC
 {
 	using namespace WinSock2;
 	class CIRCClient :
-		public CTCPClient, CIRCConnectedObject
+		public CTCPClient
 	{
 	public:
-		CIRCClient(void);
+		CIRCClient(CIRCEnvironment& env);
 		virtual void Connect(String hosturi, String port, IRCUserInfo& uInfo);
 		virtual void DoRecv();
 		virtual int TransformToArray(String rStr, String** outCmndArr);
@@ -28,6 +28,7 @@ namespace SteamIRC
 		String leftOverCmnd;
 		bool wasLeftOver;
 		CRITICAL_SECTION csSend;
+		CIRCEnvironment& env_;
 	};
 
 

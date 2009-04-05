@@ -6,10 +6,10 @@
 namespace SteamIRC
 {
 	using namespace WinSock2;
-	CIRCClient::CIRCClient(void) : wasLeftOver(false)
+	CIRCClient::CIRCClient(CIRCEnvironment& env) : wasLeftOver(false), env_(env)
 	{
-		ircIO = new CIRCMessageIO(this);
 		InitializeCriticalSection(&csSend);
+		env_->SetConnection(*this);
 	}
 
 	void CIRCClient::Connect(String hosturi, String port, IRCUserInfo& uInfo)
@@ -99,8 +99,6 @@ namespace SteamIRC
 	CIRCClient::~CIRCClient(void)
 	{
 		DeleteCriticalSection(&csSend);
-		delete ircIO;
-		ircIO = NULL;
 	}
 
 		// DON'T FORGET TO DELETE THE STRING ARRAY AFTERWARDS

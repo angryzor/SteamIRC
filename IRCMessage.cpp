@@ -35,10 +35,10 @@ namespace SteamIRC
 		if( msgStr[0] == ':' ) // yes, we have one
 		{
 			iss >> tmp; // stream it into tmp
-			Origin = tmp.substr(1); // and cut off the colon
+			Origin = IRCOrigin(tmp.substr(1)); // and cut off the colon
 		}
 		else
-			Origin = "unknown";
+			Origin = IRCOrigin("unknown");
 		// There, we set the origin. Now for the actual command
 
 		// This is a very easy way of determining if the next part is a numeral command or a textual one.
@@ -90,6 +90,7 @@ namespace SteamIRC
 	{
 		String tmp;
 		std::ostringstream oss;
+		oss << Origin.toStr() + " ";
 		oss << LookupCommandToString(Cmnd);
 
 		if(numParams > 0)
