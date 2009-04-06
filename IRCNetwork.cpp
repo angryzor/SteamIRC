@@ -11,7 +11,8 @@ namespace SteamIRC {
 		IRCMessage reply;
 		switch(msg.Cmnd) {
 		case JOIN: // Actually join a channel (channel join succesful)
-			if(msg.Origin.nick != nick_) return false;
+			if(msg.Origin.nick != nick_) return false; // If this isn't a message about ourselves, then it's just someone else who joined a chnnel we're in.
+													   // In that case, this message should be handled by the channel context.
 			Join(msg.Parameters[0]);
 			break;
 		case PING: // Regular pingpong event
@@ -35,6 +36,7 @@ namespace SteamIRC {
 
 				String cmnd;
 				iss >> cmnd;
+				cmnd.ToLower();
 
 				if(cmnd == "join") {
 					String chan;
