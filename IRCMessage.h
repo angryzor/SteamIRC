@@ -67,9 +67,9 @@ namespace SteamIRC
 
 			int iexcl = str.Find("!");
 			if(iexcl == -1)
-				user = str.substr(,iat);
+				user = str.substr(0,iat);
 			else {
-				nick = str.substr(,iexcl);
+				nick = str.substr(0,iexcl);
 				user = str.substr(iexcl+1, iat-iexcl);
 			}
 		}

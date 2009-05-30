@@ -29,6 +29,8 @@ namespace SteamIRC
 		msg.SetParam(2, "*");
 		msg.SetParam(3, uInfo.RealName);
 		Send(msg);
+		
+		env_.Add(new CIRCNetwork(*this, uInfo));
 	}
 
 //=====================================================================

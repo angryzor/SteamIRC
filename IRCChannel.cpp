@@ -5,14 +5,15 @@
 
 namespace SteamIRC
 {
-	CIRCChannel::CIRCChannel(CIRCEnvironment& env, String name) : env_(env), name_(name)
+	CIRCChannel::CIRCChannel(CIRCEnvironment& env, String name) : CIRCCommunicator(name, env)
 	{
 	}
 
 	void CIRCChannel::Part()
 	{
-		ircIO->PartChannel(Name);
-		isJoined = false;
+		IRCMessage msg(PART);
+		msg.SetParam(0, id_);
+		env_.Send
 	}
 		
 	CIRCChannel::~CIRCChannel(void)

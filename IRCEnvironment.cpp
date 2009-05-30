@@ -9,12 +9,11 @@
 
 namespace SteamIRC
 {
-	CIRCEnvironment::CIRCEnvironment(String nick) : conn_(NULL)
+	CIRCEnvironment::CIRCEnvironment() : conn_(NULL)
 	{
-		ctxts_.insert(new CIRCNetwork(*this, nick));
 	}
 
-	void CIRCEnvironment::ProcessReceived(IRCMessage& msg)
+	void CIRCEnvironment::ProcessReceived(const IRCMessage& msg)
 	{
 		for(ctxts_.const_iterator i = ctxts_.begin(); i != ctxts_.end(); i++)
 			if((*i)->AcceptIncoming(msg))
@@ -22,7 +21,7 @@ namespace SteamIRC
 		Warning("Received unprocessed message!!! | %s\r\n", msg.GetString());
 	}
 
-	void CIRCEnvironment::Send(IRCMessage& msg)
+	void CIRCEnvironment::Send(const IRCMessage& msg) const
 	{
 		conn_->Send(msg);
 	}

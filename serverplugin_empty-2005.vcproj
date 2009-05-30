@@ -305,6 +305,14 @@
 			Name="GUI"
 			>
 			<File
+				RelativePath=".\IRCGui.cpp"
+				>
+			</File>
+			<File
+				RelativePath=".\IRCGui.h"
+				>
+			</File>
+			<File
 				RelativePath=".\vguihelpers.h"
 				>
 			</File>
@@ -324,14 +332,6 @@
 		<Filter
 			Name="IRC Connection"
 			>
-			<File
-				RelativePath=".\IRCChannel.cpp"
-				>
-			</File>
-			<File
-				RelativePath=".\IRCChannel.h"
-				>
-			</File>
 			<Filter
 				Name="Lowlevel"
 				>
@@ -366,14 +366,6 @@
 				<Filter
 					Name="Messages"
 					>
-					<File
-						RelativePath=".\IRCEnvironment.cpp"
-						>
-					</File>
-					<File
-						RelativePath=".\IRCEnvironment.h"
-						>
-					</File>
 					<File
 						RelativePath=".\IRCMessage.cpp"
 						>
@@ -412,6 +404,46 @@
 					</Filter>
 				</Filter>
 			</Filter>
+			<Filter
+				Name="Environment"
+				>
+				<File
+					RelativePath=".\IRCEnvironment.cpp"
+					>
+				</File>
+				<File
+					RelativePath=".\IRCEnvironment.h"
+					>
+				</File>
+				<Filter
+					Name="Contexts"
+					>
+					<File
+						RelativePath=".\IRCChannel.cpp"
+						>
+					</File>
+					<File
+						RelativePath=".\IRCChannel.h"
+						>
+					</File>
+					<File
+						RelativePath=".\IRCContext.cpp"
+						>
+					</File>
+					<File
+						RelativePath=".\IRCContext.h"
+						>
+					</File>
+					<File
+						RelativePath=".\IRCNetwork.cpp"
+						>
+					</File>
+					<File
+						RelativePath=".\IRCNetwork.h"
+						>
+					</File>
+				</Filter>
+			</Filter>
 		</Filter>
 		<Filter
 			Name="Base Object"
@@ -434,27 +466,19 @@
 			</File>
 		</Filter>
 		<File
-			RelativePath=".\IRCContext.cpp"
+			RelativePath=".\IRCCommunicator.cpp"
 			>
 		</File>
 		<File
-			RelativePath=".\IRCContext.h"
+			RelativePath=".\IRCCommunicator.h"
 			>
 		</File>
 		<File
-			RelativePath=".\IRCGui.cpp"
+			RelativePath=".\IRCContextWithCommands.cpp"
 			>
 		</File>
 		<File
-			RelativePath=".\IRCGui.h"
-			>
-		</File>
-		<File
-			RelativePath=".\IRCNetwork.cpp"
-			>
-		</File>
-		<File
-			RelativePath=".\IRCNetwork.h"
+			RelativePath=".\IRCContextWithCommands.h"
 			>
 		</File>
 	</Files>

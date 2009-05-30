@@ -3,7 +3,7 @@
 
 namespace SteamIRC {
 
-	CIRCNetwork::CIRCNetwork(CIRCEnvironment& env, String nick) : env_(env), nick_(nick)
+	CIRCNetwork::CIRCNetwork(CIRCEnvironment& env, IRCUserInfo& usr) : CIRCContextWithCommands(title) env_(env), usr_(usr)
 	{
 	}
 
@@ -11,7 +11,7 @@ namespace SteamIRC {
 		IRCMessage reply;
 		switch(msg.Cmnd) {
 		case JOIN: // Actually join a channel (channel join succesful)
-			if(msg.Origin.nick != nick_) return false; // If this isn't a message about ourselves, then it's just someone else who joined a chnnel we're in.
+			if(msg.Origin.nick != usr_.Nick) return false; // If this isn't a message about ourselves, then it's just someone else who joined a chnnel we're in.
 													   // In that case, this message should be handled by the channel context.
 			Join(msg.Parameters[0]);
 			break;
@@ -28,32 +28,18 @@ namespace SteamIRC {
 		return true;
 	}
 	
-	bool CIRCNetwork::UserInput(String txt) {
-		try {
-			if(txt[0] == '/') {
-				std::istringstream iss;
-				iss.str(txt.substr(1));
+	bool CIRCNetwork::ProcessUserCommand(const String& cmnd, istringstream& params) {
+		if(cmnd == "join") {
+			String chan;
+			if(!(params >> chan)) throw std::runtime_error("USAGE: /join #channame");
 
-				String cmnd;
-				iss >> cmnd;
-				cmnd.ToLower();
+			IRCMessage msg(JOIN);
+			msg.SetParam(0, chan);
 
-				if(cmnd == "join") {
-					String chan;
-					if(!(iss >> chan)) throw std::runtime_error("USAGE: /join #channame");
-
-					IRCMessage msg(JOIN);
-					msg.SetParam(0, chan);
-
-					env_.Send(msg);
-					return true;
-				}
-			}
-			return false;
+			env_.Send(msg);
+			return true;
 		}
-		catch(std::runtime_error e) {
-			buf += String("ERROR: ") + e.what();
-		}
+		return false
 	}
 
 	void CIRCNetwork::Join(String chan) {

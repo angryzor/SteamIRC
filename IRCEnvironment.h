@@ -2,6 +2,7 @@
 namespace SteamIRC
 {
 	class CIRCClient;
+	class CIRCContext;
 }
 
 #include "IRCMessage.h"
@@ -12,14 +13,15 @@ namespace SteamIRC
 	class CIRCEnvironment
 	{
 	public:
-		CIRCEnvironment(String nick);
-		virtual void ProcessReceived(IRCMessage& msg);
+		CIRCEnvironment();
+		virtual void ProcessReceived(const IRCMessage& msg);
 		virtual void SetConnection(CIRCClient& conn);
 		virtual void Add(CIRCContext* con);
+		virtual void Send(const IRCMessage& msg) const;
 		virtual ~CIRCEnvironment(void);
 	private:
-		void Cleanup()
+		void Cleanup();
 		CIRCClient* conn_;
-		set<CIRCContext*> ctxts_;
+		std::set<CIRCContext*> ctxts_;
 	};
 }

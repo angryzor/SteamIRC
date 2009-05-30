@@ -1,20 +1,17 @@
 #pragma once
 
-#include "IRCConnectedObject.h"
+#include "IRCCommunicator.h"
 
 namespace SteamIRC
 {
 	class CIRCChannel :
-		public CIRCContext, CIRCConnectedObject
+		public CIRCCommunicator
 	{
 	public:
 		CIRCChannel(CIRCEnvironment& env, String name);
 		virtual ~CIRCChannel(void);
 		virtual bool UserInput(String txt);
 		virtual bool AcceptIncoming(IRCMessage& msg);
-		String get_name();
 	private:
-		String name_;
-		CIRCEnvironment& env_;
 	};
 }

@@ -1,21 +1,22 @@
 #pragma once
 #include "IRCMessage.h"
 #include "IRCEnvironment.h"
+#include "IRCContextWithCommands.h"
 #include <sstream>
 
 namespace SteamIRC {
 
 	class CIRCNetwork :
-		public CIRCContext
+		public CIRCContextWithCommands
 	{
 	public:
-		CIRCNetwork(CIRCEnvironment& env, String nick);
+		CIRCNetwork(CIRCEnvironment& env, IRCUserInfo& usr);
 		virtual bool AcceptIncoming(IRCMessage& msg);
-		virtual bool UserInput(String txt);
+		virtual bool ProcessUserCommand(const String& cmnd, istringstream& params);
 		virtual ~CIRCNetwork(void);
 	private:
 		CIRCEnvironment& env_;
-		String nick_;
+		IRCUserInfo& usr_;
 	};
 
 }
