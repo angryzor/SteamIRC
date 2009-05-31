@@ -4154,9 +4154,9 @@ struct StdStringEqualsNoCaseA
     #pragma option pop  // Turn back on inline function warnings
 //	#pragma warn +inl   // Turn back on inline function warnings
 #endif
+typedef CStdString String;
 
 #endif	// #ifndef STDSTRING_H
 
-typedef CStdString String;
 
 //#pragma warning (disable : 4311) // conversion warnings

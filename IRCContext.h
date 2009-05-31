@@ -15,6 +15,7 @@ namespace SteamIRC {
 	protected:
 		CIRCContext(String title);
 		String buffer_;
+		String title_;
 	};
 
 }

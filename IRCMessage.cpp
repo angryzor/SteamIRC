@@ -6,16 +6,16 @@
 
 namespace SteamIRC
 {
-	IRCMessage::IRCMessage(void) : numParams(0)
+	IRCMessage::IRCMessage(void) : numParams(0), Origin("unknown")
 	{
 	}
 		
-	IRCMessage::IRCMessage(String& msgStr) : numParams(0)
+	IRCMessage::IRCMessage(String& msgStr) : numParams(0), Origin("unknown")
 	{
 		ProcessString(msgStr);
 	}
 
-	IRCMessage::IRCMessage(Command cmd) : numParams(0)
+	IRCMessage::IRCMessage(Command cmd) : numParams(0), Origin("unknown")
 	{
 		Cmnd = cmd;
 	}
@@ -86,11 +86,11 @@ namespace SteamIRC
 		numParams = i;
 	}
 
-	String IRCMessage::GetString()
+	String IRCMessage::GetString(bool includeOrigin) const
 	{
 		String tmp;
 		std::ostringstream oss;
-		oss << Origin.toStr() + " ";
+		if(includeOrigin) oss << Origin.toStr() + " ";
 		oss << LookupCommandToString(Cmnd);
 
 		if(numParams > 0)
@@ -122,7 +122,7 @@ namespace SteamIRC
 		if(index >= numParams) numParams = index + 1;
 	}
 
-	Command IRCMessage::LookupStringToCommand(String& str)
+	Command IRCMessage::LookupStringToCommand(const String& str) const 
 	{
 //==========================================================
 // D= D= D= D=     D= D= D= D=
@@ -179,7 +179,7 @@ namespace SteamIRC
 		return static_cast<Command>(tmp);
 	}
 
-	String IRCMessage::LookupCommandToString(Command cmd)
+	String IRCMessage::LookupCommandToString(Command cmd) const
 	{
 		std::ostringstream oss;
 		switch(cmd)

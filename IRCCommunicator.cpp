@@ -2,7 +2,7 @@
 
 namespace SteamIRC {
 
-	CIRCCommunicator::CIRCCommunicator(String id, CIRCEnvironment& env) : id_(id), env_(env)
+	CIRCCommunicator::CIRCCommunicator(String id, CIRCEnvironment& env) : id_(id), env_(env), CIRCContextWithCommands(id)
 	{
 	}
 

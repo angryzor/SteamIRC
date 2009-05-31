@@ -1,13 +1,15 @@
+#include "eiface.h"
 #include "IRCNetwork.h"
 #include "IRCChannel.h"
 
 namespace SteamIRC {
 
-	CIRCNetwork::CIRCNetwork(CIRCEnvironment& env, IRCUserInfo& usr) : CIRCContextWithCommands(title) env_(env), usr_(usr)
+	using namespace std;
+	CIRCNetwork::CIRCNetwork(String uri, CIRCEnvironment& env, IRCUserInfo& usr) : CIRCContextWithCommands(uri), env_(env), usr_(usr)
 	{
 	}
 
-	bool CIRCNetwork::AcceptIncoming(IRCMessage& msg) {
+	bool CIRCNetwork::AcceptIncoming(const IRCMessage& msg) {
 		IRCMessage reply;
 		switch(msg.Cmnd) {
 		case JOIN: // Actually join a channel (channel join succesful)
@@ -39,11 +41,13 @@ namespace SteamIRC {
 			env_.Send(msg);
 			return true;
 		}
-		return false
+		return false;
 	}
 
 	void CIRCNetwork::Join(String chan) {
-		env_.Add(new CIRCChannel(env_, chan));
+		CIRCChannel* newChan = new CIRCChannel(env_, chan);
+		env_.Add(newChan);
+		env_.SetActiveContext(newChan);
 	}
 
 	CIRCNetwork::~CIRCNetwork(void)

@@ -9,7 +9,7 @@ namespace SteamIRC
 	{
 	public:
 		CIRCWinSock2(void);
-		CIRCClient* MakeIRCClient();
+		CIRCClient* MakeIRCClient(CIRCEnvironment& env);
 		virtual ~CIRCWinSock2(void);
 	};
 }

@@ -1,4 +1,6 @@
+#include "eiface.h"
 #include "IRCClient.h"
+#include "IRCNetwork.h"
 
 // memdbgon must be the last include file in a .cpp file!!!
 #include "tier0/memdbgon.h"
@@ -9,7 +11,7 @@ namespace SteamIRC
 	CIRCClient::CIRCClient(CIRCEnvironment& env) : wasLeftOver(false), env_(env)
 	{
 		InitializeCriticalSection(&csSend);
-		env_->SetConnection(*this);
+		env_.SetConnection(this);
 	}
 
 	void CIRCClient::Connect(String hosturi, String port, IRCUserInfo& uInfo)
@@ -30,7 +32,7 @@ namespace SteamIRC
 		msg.SetParam(3, uInfo.RealName);
 		Send(msg);
 		
-		env_.Add(new CIRCNetwork(*this, uInfo));
+		env_.Add(new CIRCNetwork(hosturi, env_, uInfo));
 	}
 
 //=====================================================================
@@ -38,22 +40,32 @@ namespace SteamIRC
 // /-----------------------------------------------------------------\ 
 	void CIRCClient::DoRecv()
 	{
+		Msg("1");
 		String rStr = CTCPClient::Recv(); // This will block until info is received
 		String* cmndArray;
 		IRCMessage* msgArray;
 		int numCmnds;
 		
+		Msg("2");
 		numCmnds = TransformToArray(rStr, &cmndArray);
+		Msg("3");
 
 		msgArray = new IRCMessage [numCmnds];
+		Msg("4");
 
 		for(int i = 0; i < numCmnds; i++)
 			msgArray[i].ProcessString(cmndArray[i]);
-		for(int i = 0; i < numCmnds; i++)
-			ircIO->ProcessReceived(msgArray[i]);
+		Msg("5");
+
+		for(int i = 0; i < numCmnds; i++) {
+			Msg("6 %s\r\n", msgArray[i].GetString().c_str());
+			env_.ProcessReceived(msgArray[i]);
+		}
 
 		delete [] msgArray;
 		delete [] cmndArray;
+				Msg("7");
+
 	}
 // \-----------------------------------------------------------------/
 //  /THREAD BOUNDARY
@@ -69,7 +81,7 @@ namespace SteamIRC
 			wasLeftOver = false;
 		}
 
-		int strl = rStr.length();
+		int strl = (int)rStr.length();
 		int indxLastCRLF = rStr.ReverseFind("\r\n");
 
 		if(indxLastCRLF < (strl - 2)) // Not finished
@@ -84,9 +96,9 @@ namespace SteamIRC
 	}
 
 	// I'm not sure if this really needs a critical section, but I'm putting one for certainty.
-	void CIRCClient::Send(IRCMessage& msg)
+	void CIRCClient::Send(const IRCMessage& msg)
 	{
-		String tmp = msg.GetString();
+		String tmp = msg.GetString(false);
 		EnterCriticalSection(&csSend);
 		CTCPClient::Send(tmp);
 		LeaveCriticalSection(&csSend);
@@ -104,7 +116,7 @@ namespace SteamIRC
 	}
 
 		// DON'T FORGET TO DELETE THE STRING ARRAY AFTERWARDS
-	int StringSplit(String& str, String** arr, String& splitchar)
+	int StringSplit(const String& str, String** arr, const String& splitchar)
 	{
 		int idx = 0;
 		int count = 0;

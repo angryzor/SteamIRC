@@ -8,20 +8,25 @@
 #include "vgui/ILocalize.h"
 
 
-using namespace vgui;
+namespace SteamIRC {
+	using namespace vgui;
 
-class IRCGui
-{
-public:
-	IRCGui(CreateInterfaceFn interfaceFactory) throw(std::runtime_error);
-	virtual ~IRCGui(void);
+	class CIRCEnvironment;
+	class IRCGui
+	{
+	public:
+		IRCGui(CreateInterfaceFn interfaceFactory, CIRCEnvironment& env) throw(std::runtime_error);
+		virtual ~IRCGui(void);
 
-	void CreatePanel() throw(std::logic_error);
-	void DestroyPanel();
-private:
-	IEngineVGui* vguiEngine_;
-	ISchemeManager*	 vguiScheme_;
-	ILocalize* vguiLocalize_;
+		void CreatePanel() throw(std::logic_error);
+		void Update();
+		void DestroyPanel();
+	private:
+		IEngineVGui* vguiEngine_;
+		ISchemeManager*	 vguiScheme_;
+		ILocalize* vguiLocalize_;
+		CIRCEnvironment& env_;
 
-	CIRCPanel* panel_;
-};
+		CIRCPanel* panel_;
+	};
+}

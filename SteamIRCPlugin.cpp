@@ -13,6 +13,7 @@
 #include "IRCWinSock2.h"
 #include "IRCClient.h"
 #include "Object.h"
+#include "IRCEnvironment.h"
 #include "IRCGui.h"
 #include <stdexcept>
 
@@ -24,7 +25,7 @@ using namespace SteamIRC;
 IRCGui* gui = NULL;
 CIRCWinSock2 sockEngine;
 CIRCClient* ircClient = NULL;
-//CIRCEnvironment* ircEnv = NULL;
+CIRCEnvironment ircEnv;
 HANDLE tRecv = NULL;
 bool runRecv = false;
 
@@ -44,27 +45,28 @@ bool CSteamIRCPlugin::Load(	CreateInterfaceFn interfaceFactory, CreateInterfaceF
 	ConnectTier3Libraries( &interfaceFactory, 1 );
 
 	Msg("======================= SteamIRC v0.1a =======================\r\n");
-	Msg(" Build 0007\r\n");
+	Msg(" Build 0008\r\n");
 	Msg(" Written by angryzor\r\n");
 	Msg("--------------------------------------------------------------\r\n");
 	Msg(" Booting...\r\n");
 	Msg(" Starting GUI system...\r\n");
 
 	try { 
-		gui = new IRCGui(interfaceFactory); 
+		gui = new IRCGui(interfaceFactory, ircEnv); 
 	}
 	catch(std::runtime_error err) {
 		Warning(err.what());
 		Warning("Aborting.");
 		return false;
 	}
+	ircEnv.SetGui(gui);
 
 	Msg(" Registering ConVars...\r\n");
 	ConVar_Register( 0 );
 
 //	InitializeCriticalSection(&csRecv);
 
-	ircClient = sockEngine.MakeIRCClient();
+	ircClient = sockEngine.MakeIRCClient(ircEnv);
 
 	Msg(" Boot successful! SteamIRC ready.\r\n");
 	return true;
@@ -76,11 +78,11 @@ bool CSteamIRCPlugin::Load(	CreateInterfaceFn interfaceFactory, CreateInterfaceF
 void CSteamIRCPlugin::Unload( void )
 {
 
-	gui->DestroyPanel();
-	delete gui;
 	delete ircClient;
 	ircClient = NULL;
 
+	gui->DestroyPanel();
+	delete gui;
 //	DeleteCriticalSection(&csRecv);
 
 	ConVar_Unregister( );
@@ -288,7 +290,7 @@ CON_COMMAND( irc_join, "Joins a channel" )
 
 
 
-CON_COMMAND( irc_show, "prints the version of the empty plugin" )
+CON_COMMAND( irc_show, "shows the irc window" )
 {
 
 	try {
@@ -298,23 +300,13 @@ CON_COMMAND( irc_show, "prints the version of the empty plugin" )
 		Warning(err.what());
 		return;
 	}
-//pFrame->SetParent(vguiEngine->GetPanel( PANEL_GAMEUIDLL ));
-//pFrame->SetScheme("IRCScheme.res");
-//pFrame->SetSize( 100, 100 );
-//pFrame->SetTitle("My First Frame", true );
-//pFrame->Activate();	// set visible, move to front, request focus
 	Msg( "Completed.\n" );
 }
 
-CON_COMMAND( irc_unshow, "prints the version of the empty plugin" )
+CON_COMMAND( irc_unshow, "destroys the irc window" )
 {
 	Msg( "deleting" );
 
 	gui->DestroyPanel();
-//pFrame->SetParent(vguiEngine->GetPanel( PANEL_GAMEUIDLL ));
-//pFrame->SetScheme("IRCScheme.res");
-//pFrame->SetSize( 100, 100 );
-//pFrame->SetTitle("My First Frame", true );
-//pFrame->Activate();	// set visible, move to front, request focus
 	Msg( "Completed." );
 }

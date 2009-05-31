@@ -57,7 +57,7 @@ namespace SteamIRC
 	};
 
 	struct IRCOrigin {
-		IRCOrigin(String str) {
+		IRCOrigin(const String& str) {
 			int iat(str.Find("@"));
 			if(iat == -1) {
 				addr = str;
@@ -73,7 +73,7 @@ namespace SteamIRC
 				user = str.substr(iexcl+1, iat-iexcl);
 			}
 		}
-		String toStr() {
+		String toStr() const{
 			return nick + String("!") + user + String("@") + addr;
 		}
 		String nick;
@@ -88,7 +88,7 @@ namespace SteamIRC
 		IRCMessage(String& msgStr);
 		IRCMessage(Command cmd);
 		virtual void ProcessString(String& msgStr);
-		virtual String GetString();
+		virtual String GetString(bool includeOrigin = true) const;
 		virtual ~IRCMessage(void);
 		virtual void SetCommand(Command cmd);
 		virtual void SetParam(unsigned char index, String val);
@@ -96,8 +96,8 @@ namespace SteamIRC
 		virtual void Reset();
 
 	protected:
-		virtual Command LookupStringToCommand(String& str);
-		virtual String LookupCommandToString(Command cmd);
+		virtual Command LookupStringToCommand(const String& str) const;
+		virtual String LookupCommandToString(Command cmd) const;
 	public:
 		IRCOrigin Origin;
 		String Parameters[15]; // a message can have a maximum of 15 params

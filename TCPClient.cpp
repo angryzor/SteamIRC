@@ -73,7 +73,7 @@ namespace SteamIRC
 			}
 		}
 
-		void CTCPClient::Send(String& data)
+		void CTCPClient::Send(const String& data)
 		{
 			try
 			{

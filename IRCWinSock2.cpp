@@ -9,9 +9,9 @@ namespace SteamIRC
 	{
 	}
 
-	CIRCClient* CIRCWinSock2::MakeIRCClient()
+	CIRCClient* CIRCWinSock2::MakeIRCClient(CIRCEnvironment& env)
 	{
-		return new CIRCClient();
+		return new CIRCClient(env);
 	}
 
 	CIRCWinSock2::~CIRCWinSock2(void)

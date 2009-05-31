@@ -6,16 +6,22 @@
 #include "ienginevgui.h"
 #include "vgui/ischeme.h"
 
-using namespace vgui;
+namespace SteamIRC {
+	using namespace vgui;
 
-class CIRCPanel :
-	public Frame
-{
-	DECLARE_CLASS_SIMPLE(CIRCPanel, Frame);
-public:
-	CIRCPanel( vgui::VPANEL parent, IEngineVGui* vguiEngine,	ISchemeManager* vguiScheme );
-	~CIRCPanel() {};
-protected:
-	virtual void OnCommand(const char* pcCommand);
-};
+	class CIRCEnvironment;
+	class CIRCPanel :
+		public Frame
+	{
+		DECLARE_CLASS_SIMPLE(CIRCPanel, Frame);
+	public:
+		CIRCPanel( vgui::VPANEL parent, IEngineVGui* vguiEngine,	ISchemeManager* vguiScheme , CIRCEnvironment& env);
+		~CIRCPanel() {};
+		void Update();
+	protected:
+		virtual void OnCommand(const char* pcCommand);
+	private:
+		CIRCEnvironment& env_;
+	};
 
+}

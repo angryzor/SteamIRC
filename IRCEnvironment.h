@@ -5,23 +5,36 @@ namespace SteamIRC
 	class CIRCContext;
 }
 
-#include "IRCMessage.h"
 #include <set>
+#include <string>
 
 namespace SteamIRC
 {
+	class IRCGui;
+	class IRCMessage;
 	class CIRCEnvironment
 	{
 	public:
 		CIRCEnvironment();
-		virtual void ProcessReceived(const IRCMessage& msg);
-		virtual void SetConnection(CIRCClient& conn);
-		virtual void Add(CIRCContext* con);
-		virtual void Send(const IRCMessage& msg) const;
+		void ProcessReceived(const IRCMessage& msg);
+		void SetConnection(CIRCClient* conn);
+		void Add(CIRCContext* con);
+		void Remove(CIRCContext* con);
+		void GetContexts();
+		void Send(const IRCMessage& msg) const;
+		void SetActiveContext(CIRCContext* con);
+		CIRCContext* GetActiveContext();
+		void UserInput(const std::string& txt);
+		void SetGui(IRCGui* gui);
+		IRCGui* GetGui();
 		virtual ~CIRCEnvironment(void);
 	private:
+		CIRCEnvironment& operator=(CIRCEnvironment&);
+		typedef std::set<CIRCContext*> context_set;
 		void Cleanup();
 		CIRCClient* conn_;
-		std::set<CIRCContext*> ctxts_;
+		context_set ctxts_;
+		CIRCContext* act_;
+		IRCGui* gui_;
 	};
 }
