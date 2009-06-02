@@ -1,6 +1,7 @@
 #pragma once
 #include "IRCContext.h"
 #include <sstream>
+#include "IRCEnvironment.h"
 
 namespace SteamIRC {
 
@@ -8,11 +9,15 @@ namespace SteamIRC {
 		public CIRCContext
 	{
 	public:
-		virtual bool UserInput(const String& txt);
-		virtual bool ProcessUserCommand(const String& cmnd, std::istringstream& params) = 0;
+		virtual bool UserInput(const std::string& txt);
+		virtual bool ProcessUserCommand(const std::string& cmnd, std::istringstream& params) = 0;
+		virtual bool AcceptIncoming(const IRCMessage& msg);
 		virtual ~CIRCContextWithCommands(void);
 	protected:
-		CIRCContextWithCommands(String title);
+		CIRCContextWithCommands(std::string title, CIRCEnvironment& env);
+		CIRCEnvironment& env_;
+	private:
+		CIRCContextWithCommands& operator=(CIRCContextWithCommands&);
 	};
 
 }

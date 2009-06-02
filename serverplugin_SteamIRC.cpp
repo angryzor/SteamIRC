@@ -221,8 +221,8 @@ void CEmptyServerPlugin::ClientDisconnect( edict_t *pEntity )
 void CEmptyServerPlugin::ClientPutInServer( edict_t *pEntity, char const *playername )
 {
 	KeyValues *kv = new KeyValues( "msg" );
-	kv->SetString( "title", "Hello" );
-	kv->SetString( "msg", "Hello there" );
+	kv->Setstd::string( "title", "Hello" );
+	kv->Setstd::string( "msg", "Hello there" );
 	kv->SetColor( "color", Color( 255, 0, 0, 255 ));
 	kv->SetInt( "level", 5);
 	kv->SetInt( "time", 10);
@@ -280,7 +280,7 @@ CON_COMMAND( DoAskConnect, "Server plugin example of using the ask connect dialo
 		const char *pServerIP = args.Arg( 1 );
 
 		KeyValues *kv = new KeyValues( "menu" );
-		kv->SetString( "title", pServerIP );	// The IP address of the server to connect to goes in the "title" field.
+		kv->Setstd::string( "title", pServerIP );	// The IP address of the server to connect to goes in the "title" field.
 		kv->SetInt( "time", 3 );
 
 		for ( int i=1; i < gpGlobals->maxClients; i++ )
@@ -311,11 +311,11 @@ PLUGIN_RESULT CEmptyServerPlugin::ClientCommand( edict_t *pEntity, const CComman
 	if ( FStrEq( pcmd, "menu" ) )
 	{
 		KeyValues *kv = new KeyValues( "menu" );
-		kv->SetString( "title", "You've got options, hit ESC" );
+		kv->Setstd::string( "title", "You've got options, hit ESC" );
 		kv->SetInt( "level", 1 );
 		kv->SetColor( "color", Color( 255, 0, 0, 255 ));
 		kv->SetInt( "time", 20 );
-		kv->SetString( "msg", "Pick an option\nOr don't." );
+		kv->Setstd::string( "msg", "Pick an option\nOr don't." );
 		
 		for( int i = 1; i < 9; i++ )
 		{
@@ -325,8 +325,8 @@ PLUGIN_RESULT CEmptyServerPlugin::ClientCommand( edict_t *pEntity, const CComman
 			Q_snprintf( cmd, sizeof(cmd), "option%i", i );
 
 			KeyValues *item1 = kv->FindKey( num, true );
-			item1->SetString( "msg", msg );
-			item1->SetString( "command", cmd );
+			item1->Setstd::string( "msg", msg );
+			item1->Setstd::string( "command", cmd );
 		}
 
 		helpers->CreateMessage( pEntity, DIALOG_MENU, kv, this );
@@ -336,10 +336,10 @@ PLUGIN_RESULT CEmptyServerPlugin::ClientCommand( edict_t *pEntity, const CComman
 	else if ( FStrEq( pcmd, "rich" ) )
 	{
 		KeyValues *kv = new KeyValues( "menu" );
-		kv->SetString( "title", "A rich message" );
+		kv->Setstd::string( "title", "A rich message" );
 		kv->SetInt( "level", 1 );
 		kv->SetInt( "time", 20 );
-		kv->SetString( "msg", "This is a long long long text string.\n\nIt also has line breaks." );
+		kv->Setstd::string( "msg", "This is a long long long text string.\n\nIt also has line breaks." );
 		
 		helpers->CreateMessage( pEntity, DIALOG_TEXT, kv, this );
 		kv->deleteThis();
@@ -348,7 +348,7 @@ PLUGIN_RESULT CEmptyServerPlugin::ClientCommand( edict_t *pEntity, const CComman
 	else if ( FStrEq( pcmd, "msg" ) )
 	{
 		KeyValues *kv = new KeyValues( "menu" );
-		kv->SetString( "title", "Just a simple hello" );
+		kv->Setstd::string( "title", "Just a simple hello" );
 		kv->SetInt( "level", 1 );
 		kv->SetInt( "time", 20 );
 		
@@ -359,9 +359,9 @@ PLUGIN_RESULT CEmptyServerPlugin::ClientCommand( edict_t *pEntity, const CComman
 	else if ( FStrEq( pcmd, "entry" ) )
 	{
 		KeyValues *kv = new KeyValues( "entry" );
-		kv->SetString( "title", "Stuff" );
-		kv->SetString( "msg", "Enter something" );
-		kv->SetString( "command", "say" ); // anything they enter into the dialog turns into a say command
+		kv->Setstd::string( "title", "Stuff" );
+		kv->Setstd::string( "msg", "Enter something" );
+		kv->Setstd::string( "command", "say" ); // anything they enter into the dialog turns into a say command
 		kv->SetInt( "level", 1 );
 		kv->SetInt( "time", 20 );
 		

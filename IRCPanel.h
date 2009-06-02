@@ -15,13 +15,14 @@ namespace SteamIRC {
 	{
 		DECLARE_CLASS_SIMPLE(CIRCPanel, Frame);
 	public:
-		CIRCPanel( vgui::VPANEL parent, IEngineVGui* vguiEngine,	ISchemeManager* vguiScheme , CIRCEnvironment& env);
+		CIRCPanel( vgui::VPANEL parent, IEngineVGui* vguiEngine,	ISchemeManager* vguiScheme , CIRCEnvironment& env, ILocalize* loc);
 		~CIRCPanel() {};
 		void Update();
 	protected:
 		virtual void OnCommand(const char* pcCommand);
 	private:
 		CIRCEnvironment& env_;
+		ILocalize* loc_;
 	};
 
 }

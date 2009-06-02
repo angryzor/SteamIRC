@@ -1,7 +1,7 @@
 #pragma once
 
 #include <stdexcept>
-#include "StdString.h"
+#include <string>
 #include <sstream>
 
 namespace SteamIRC
@@ -12,12 +12,12 @@ namespace SteamIRC
 		class wsa_runtime_error : public std::runtime_error
 		{
 		public:
-			wsa_runtime_error(String what) : std::runtime_error(what) {
+			wsa_runtime_error(std::string what) : std::runtime_error(what) {
 				err = WSAGetLastError();
 			}
 			virtual const char* what() {
 				std::ostringstream os;
-				os << std::runtime_error::what() << std::endl << _T("Error code:") << std::hex << err;
+				os << std::runtime_error::what() << std::endl << "Error code:" << std::hex << err;
 				return os.str().c_str();
 			}
 		private:

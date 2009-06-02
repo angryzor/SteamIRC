@@ -11,17 +11,22 @@
 
 namespace SteamIRC
 {
-	CIRCEnvironment::CIRCEnvironment() : conn_(NULL)
+	CIRCEnvironment::CIRCEnvironment() : conn_(NULL), act_(NULL)
 	{
 	}
 
 	void CIRCEnvironment::ProcessReceived(const IRCMessage& msg)
 	{
+		if(act_->AcceptIncoming(msg)) {
+			gui_->Update();
+			return;
+		}
 		for(context_set::const_iterator i = ctxts_.begin(); i != ctxts_.end(); i++)
 			if((*i)->AcceptIncoming(msg)) {
 				gui_->Update();
 				return;
 			}
+		gui_->Update();
 		Warning("Received unprocessed message!!! | %s\r\n", msg.GetString().c_str());
 	}
 
@@ -47,8 +52,8 @@ namespace SteamIRC
 		ctxts_.erase(con);
 	}
 
-	void CIRCEnvironment::GetContexts() {
-		ctxts_;
+	CIRCEnvironment::context_set* CIRCEnvironment::GetContexts() {
+		return &ctxts_;
 	}
 
 	void CIRCEnvironment::SetActiveContext(SteamIRC::CIRCContext *con) {
@@ -61,6 +66,7 @@ namespace SteamIRC
 
 	void CIRCEnvironment::UserInput(const std::string& txt) {
 		act_->UserInput(txt);
+		gui_->Update();
 	}
 
 	void CIRCEnvironment::SetGui(IRCGui* gui){
@@ -76,6 +82,15 @@ namespace SteamIRC
 		for(context_set::const_iterator i = ctxts_.begin(); i != ctxts_.end(); i++)
 			delete *i;
 		ctxts_.clear();
+		act_ = NULL;
+	}
+
+	void CIRCEnvironment::SetUInfo(IRCUserInfo& uInfo) {
+		uInfo_ = uInfo;
+	}
+
+	IRCUserInfo* CIRCEnvironment::GetUInfo() {
+		return &uInfo_;
 	}
 
 	CIRCEnvironment::~CIRCEnvironment(void)

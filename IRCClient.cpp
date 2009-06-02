@@ -1,6 +1,7 @@
 #include "eiface.h"
 #include "IRCClient.h"
 #include "IRCNetwork.h"
+#include <xstring>
 
 // memdbgon must be the last include file in a .cpp file!!!
 #include "tier0/memdbgon.h"
@@ -8,30 +9,31 @@
 namespace SteamIRC
 {
 	using namespace WinSock2;
-	CIRCClient::CIRCClient(CIRCEnvironment& env) : wasLeftOver(false), env_(env)
+	CIRCClient::CIRCClient(CIRCEnvironment& env) : env_(env)
 	{
 		InitializeCriticalSection(&csSend);
 		env_.SetConnection(this);
 	}
 
-	void CIRCClient::Connect(String hosturi, String port, IRCUserInfo& uInfo)
+	void CIRCClient::Connect(std::string hosturi, std::string port, IRCUserInfo& uInfo)
 	{
 		// Connect to the IRC server on hosturi:port
 		CTCPClient::Connect(hosturi, port);
 
 		// Send the login data
 		IRCMessage msg(NICK);
-		msg.SetParam(0, uInfo.Nick);
+		msg.AddParam(uInfo.Nick);
 		Send(msg);
 
 		msg.Reset();
 		msg.SetCommand(USER);
-		msg.SetParam(0, uInfo.UserName);
-		msg.SetParam(1, uInfo.autoModeBM);
-		msg.SetParam(2, "*");
-		msg.SetParam(3, uInfo.RealName);
+		msg.AddParam(uInfo.UserName);
+		msg.AddParam(uInfo.autoModeBM);
+		msg.AddParam("*");
+		msg.AddParam(uInfo.RealName);
 		Send(msg);
 		
+		env_.SetUInfo(uInfo);
 		env_.Add(new CIRCNetwork(hosturi, env_, uInfo));
 	}
 
@@ -40,65 +42,58 @@ namespace SteamIRC
 // /-----------------------------------------------------------------\ 
 	void CIRCClient::DoRecv()
 	{
-		Msg("1");
-		String rStr = CTCPClient::Recv(); // This will block until info is received
-		String* cmndArray;
-		IRCMessage* msgArray;
-		int numCmnds;
+		std::string rStr = CTCPClient::Recv(); // This will block until info is received
+		vector<std::string> cmnds;
+		vector<IRCMessage> msgs;
 		
-		Msg("2");
-		numCmnds = TransformToArray(rStr, &cmndArray);
-		Msg("3");
+		cmnds = TransformToVector(rStr);
 
-		msgArray = new IRCMessage [numCmnds];
-		Msg("4");
 
-		for(int i = 0; i < numCmnds; i++)
-			msgArray[i].ProcessString(cmndArray[i]);
-		Msg("5");
-
-		for(int i = 0; i < numCmnds; i++) {
-			Msg("6 %s\r\n", msgArray[i].GetString().c_str());
-			env_.ProcessReceived(msgArray[i]);
+		for(vector<std::string>::const_iterator i = cmnds.begin(); i != cmnds.end(); i++) {
+			vector<IRCMessage>::iterator new_pos = msgs.insert(msgs.end(), IRCMessage());
+			new_pos->ProcessString(*i);
 		}
 
-		delete [] msgArray;
-		delete [] cmndArray;
-				Msg("7");
-
+		for(vector<IRCMessage>::const_iterator i = msgs.begin(); i != msgs.end(); i++) {
+			Msg("RAW: %s\r\n", i->GetString().c_str());
+			env_.ProcessReceived(*i);
+		}
 	}
 // \-----------------------------------------------------------------/
 //  /THREAD BOUNDARY
 //=====================================================================
 
-	int CIRCClient::TransformToArray(String rStr, String** outCmndArr)
+	vector<std::string> CIRCClient::TransformToVector(std::string rStr)
 	{
+		vector<std::string> res;
 		// Save last command if not finished
+		rStr = leftOverCmnd + rStr;
 
-		if(wasLeftOver)
 		{
-			rStr = leftOverCmnd + rStr;
-			wasLeftOver = false;
+			std::string::size_type posfound = 0;
+			while((posfound = rStr.find("\r\n", posfound)) != rStr.npos)
+				rStr.replace(posfound, 2, "\n");
+			while((posfound = rStr.find("\r", posfound)) != rStr.npos)
+				rStr.replace(posfound, 1, ""); // CRs for some reason bug the stringstream
 		}
 
-		int strl = (int)rStr.length();
-		int indxLastCRLF = rStr.ReverseFind("\r\n");
-
-		if(indxLastCRLF < (strl - 2)) // Not finished
 		{
-			leftOverCmnd = rStr.substr(indxLastCRLF+2);
-			wasLeftOver = true;
+			std::istringstream iss(rStr, istringstream::in);
+			std::string line;
+			while(!(std::getline(iss, line).eof())){
+				Msg("NOW INSERTING: %s\r\n", line.c_str());
+				res.insert(res.end(), line);
+			}
+			leftOverCmnd = line;
 		}
-		
-		rStr = rStr.substr(0, indxLastCRLF);
 
-		return StringSplit(rStr, outCmndArr, String("\r\n"));
+		return res;
 	}
 
 	// I'm not sure if this really needs a critical section, but I'm putting one for certainty.
 	void CIRCClient::Send(const IRCMessage& msg)
 	{
-		String tmp = msg.GetString(false);
+		std::string tmp = msg.GetString(false);
 		EnterCriticalSection(&csSend);
 		CTCPClient::Send(tmp);
 		LeaveCriticalSection(&csSend);
@@ -106,42 +101,13 @@ namespace SteamIRC
 
 	void CIRCClient::Disconnect(void)
 	{
-		CTCPClient::Send(String("QUIT\r\n"));
+		CTCPClient::Send(std::string("QUIT\r\n"));
 		CTCPClient::Disconnect();
 	}
 		
 	CIRCClient::~CIRCClient(void)
 	{
 		DeleteCriticalSection(&csSend);
-	}
-
-		// DON'T FORGET TO DELETE THE STRING ARRAY AFTERWARDS
-	int StringSplit(const String& str, String** arr, const String& splitchar)
-	{
-		int idx = 0;
-		int count = 0;
-		int splclen = splitchar.length();
-		int prevIdx = 0;
-
-		// 2-pass
-		while((idx = str.Find(splitchar, idx + splclen)) != -1)
-		{
-			count++;
-		}
-
-		*arr = new String [count+1];
-
-		idx = -splclen;
-		for(int i = 0; i < count; i++)
-		{
-			prevIdx = idx;
-			idx = str.Find(splitchar, idx + splclen);
-
-			(*arr)[i] = str.substr(prevIdx + splclen, idx - prevIdx - splclen);
-		}
-		(*arr)[count] = str.substr(idx + splclen, str.length() - idx - splclen);
-
-		return count+1;
 	}
 }
 

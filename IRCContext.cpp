@@ -2,14 +2,14 @@
 
 namespace SteamIRC {
 
-	CIRCContext::CIRCContext(String title) : title_(title) {
+	CIRCContext::CIRCContext(std::string title) : title_(title) {
 	}
 
-	String CIRCContext::GetBuffer() const {
+	std::string CIRCContext::GetBuffer() const {
 		return buffer_;
 	}
 
-	String CIRCContext::GetTitle() const {
+	std::string CIRCContext::GetTitle() const {
 		return title_;
 	}
 

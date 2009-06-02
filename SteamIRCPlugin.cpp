@@ -28,6 +28,7 @@ CIRCClient* ircClient = NULL;
 CIRCEnvironment ircEnv;
 HANDLE tRecv = NULL;
 bool runRecv = false;
+IRCUserInfo uInfo;
 
 CSteamIRCPlugin::CSteamIRCPlugin(void) : m_iClientCommandIndex(0)
 {
@@ -45,7 +46,7 @@ bool CSteamIRCPlugin::Load(	CreateInterfaceFn interfaceFactory, CreateInterfaceF
 	ConnectTier3Libraries( &interfaceFactory, 1 );
 
 	Msg("======================= SteamIRC v0.1a =======================\r\n");
-	Msg(" Build 0008\r\n");
+	Msg(" Build 0009\r\n");
 	Msg(" Written by angryzor\r\n");
 	Msg("--------------------------------------------------------------\r\n");
 	Msg(" Booting...\r\n");
@@ -77,6 +78,14 @@ bool CSteamIRCPlugin::Load(	CreateInterfaceFn interfaceFactory, CreateInterfaceF
 //---------------------------------------------------------------------------------
 void CSteamIRCPlugin::Unload( void )
 {
+	if(runRecv) {
+		// Alert the recvthread that it should stop processing messages and wait for it to finish
+		runRecv = false;
+		WaitForSingleObject(tRecv,INFINITE);
+
+		ircClient->Disconnect();
+		ircEnv.Cleanup();
+	}
 
 	delete ircClient;
 	ircClient = NULL;
@@ -227,10 +236,10 @@ CON_COMMAND( irc_connect, "Connects to an IRC server" )
 	try
 	{
 		tRecv = NULL;
-		IRCUserInfo uInfo = { args[3],
-							  args[4],
-							  8,
-							  args[5] };
+		uInfo.Nick =       args[3];
+		uInfo.UserName =   args[4];
+		uInfo.autoModeBM = 8;
+		uInfo.RealName =   args[5];
 
 		// Connect our client
 		ircClient->Connect(args[1], args[2], uInfo);
@@ -250,10 +259,10 @@ CON_COMMAND( irc_chat4allconnect, "Debug - Connects to Chat4all IRC server" )
 	try
 	{
 		tRecv = NULL;
-		IRCUserInfo uInfo = { "Ruben",
-							  "ruben_tytgat",
-							  3,
-							  "Ruben Tytgat" };
+		uInfo.Nick =       "Ruben";
+		uInfo.UserName =   "ruben_tytgat";
+		uInfo.autoModeBM = 3;
+		uInfo.RealName =   "Ruben Tytgat";
 
 		// Connect our client
 		ircClient->Connect("irc.chat4all.org", "6667", uInfo);
@@ -270,31 +279,23 @@ CON_COMMAND( irc_chat4allconnect, "Debug - Connects to Chat4all IRC server" )
 
 CON_COMMAND( irc_disconnect, "Disconnects from IRC server" )
 {
-	// Alert the recvthread that it should stop processing messages and wait for it to finish
-	runRecv = false;
-	WaitForSingleObject(tRecv,INFINITE);
+	if(runRecv) {
+		// Alert the recvthread that it should stop processing messages and wait for it to finish
+		runRecv = false;
+		WaitForSingleObject(tRecv,INFINITE);
 
-	ircClient->Disconnect();
+		ircClient->Disconnect();
+
+		ircEnv.Cleanup();
+	}
 }
-
-CON_COMMAND( irc_join, "Joins a channel" )
-{
-}
-
-
-
-
-
-
-
-
-
 
 CON_COMMAND( irc_show, "shows the irc window" )
 {
 
 	try {
 		gui->CreatePanel();
+		gui->Update();
 	}
 	catch(std::logic_error err) {
 		Warning(err.what());

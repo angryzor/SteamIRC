@@ -6,20 +6,20 @@
 
 namespace SteamIRC
 {
-	IRCMessage::IRCMessage(void) : numParams(0), Origin("unknown")
+	IRCMessage::IRCMessage(void) : Origin("unknown")
 	{
 	}
 		
-	IRCMessage::IRCMessage(String& msgStr) : numParams(0), Origin("unknown")
+	IRCMessage::IRCMessage(std::string& msgStr) : Origin("unknown")
 	{
 		ProcessString(msgStr);
 	}
 
-	IRCMessage::IRCMessage(Command cmd) : numParams(0), Origin("unknown")
+	IRCMessage::IRCMessage(Command cmd) : Origin("unknown")
 	{
 		Cmnd = cmd;
 	}
-	void IRCMessage::ProcessString(String& msgStr)
+	void IRCMessage::ProcessString(const std::string& msgStr)
 	{
 		// A plain text message string is converted to and saved into this IRCMessage here
 		
@@ -28,7 +28,8 @@ namespace SteamIRC
 		
 		iss.str(msgStr);
 
-		String tmp;
+		std::string tmp;
+		std::string tmp2;
 		unsigned short numeralCmd;
 
 		// First, check if we have a prefix.
@@ -60,46 +61,41 @@ namespace SteamIRC
 
 		// OK, we got the command. This is the last and hardest part,
 		// the parameters
-		unsigned char i = 0;
 		while(!iss.eof())
 		{
-			iss >> Parameters[i];
+			if(!(iss >> tmp2)) break;
 
-			if((Parameters[i])[0] == ':') // This is a very special first character. It means that everything behind it,
+			if(tmp2[0] == ':') // This is a very special first character. It means that everything behind it,
 			{							  // including spaces, is part of this parameter.
-				Parameters[i] = Parameters[i].substr(1);
-				Parameters[i].append(" ");
+				tmp2 = tmp2.substr(1);
+				tmp2.append(" ");
 				
-				if(!iss.eof())
+				while(!iss.eof())
 				{
-					while(!iss.eof())
-					{
-						iss >> tmp;
-						Parameters[i].append(tmp);
-						Parameters[i].append(" ");
-					}
-					Parameters[i] = Parameters[i].substr(0, Parameters[i].length() - 1);
+					if(!(iss >> tmp)) break;
+					tmp2.append(tmp);
+					tmp2.append(" ");
 				}
+				tmp2 = tmp2.substr(0, tmp2.length() - 1);
 			}
-			i++;
+			AddParam(tmp2);
 		}
-		numParams = i;
 	}
 
-	String IRCMessage::GetString(bool includeOrigin) const
+	std::string IRCMessage::GetString(bool includeOrigin) const
 	{
-		String tmp;
+		std::string tmp;
 		std::ostringstream oss;
 		if(includeOrigin) oss << Origin.toStr() + " ";
 		oss << LookupCommandToString(Cmnd);
 
-		if(numParams > 0)
+		if(Parameters.size() > 0)
 		{
-			for(int i = 0; i < numParams - 1; i++)
+			for(std::vector<std::string>::size_type i = 0; i < Parameters.size() - 1; i++)
 			{
 				oss << ' ' << Parameters[i];
 			}
-			oss << " :" << Parameters[numParams - 1];
+			oss << " :" << Parameters[Parameters.size() - 1];
 		}
 
 		oss << "\r\n";
@@ -108,78 +104,86 @@ namespace SteamIRC
 		return tmp;
 	}
 
-	void IRCMessage::SetParam(unsigned char index, String val)
-	{
-		Parameters[index] = val;
-		if(index >= numParams) numParams = index + 1;
+	void IRCMessage::AddParam(std::string val) {
+		Parameters.insert(Parameters.end(), val);
 	}
 
-	void IRCMessage::SetParam(unsigned char index, int val)
+	void IRCMessage::AddParam(int val) {
+		std::ostringstream oss;
+		oss << val;
+		Parameters.insert(Parameters.end(), oss.str());
+	}
+
+	void IRCMessage::SetParam(int index, std::string val)
+	{
+		Parameters[index] = val;
+	}
+
+	void IRCMessage::SetParam(int index, int val)
 	{
 		std::ostringstream oss;
 		oss << val;
 		Parameters[index] = oss.str();
-		if(index >= numParams) numParams = index + 1;
 	}
 
-	Command IRCMessage::LookupStringToCommand(const String& str) const 
+	Command IRCMessage::LookupStringToCommand(const std::string& str) const 
 	{
 //==========================================================
 // D= D= D= D=     D= D= D= D=
 // OH NOES!!! TIZ CODE IS TEH UGLYZ!!! TIS CLEARLY POOR DESIGN!!!
 // REPAIR ASAP!!!
 //==========================================================
-		if(str.Compare("PASS") == 0) return PASS;
-		if(str.Compare("NICK") == 0) return NICK;
-		if(str.Compare("USER") == 0) return USER;
-		if(str.Compare("OPER") == 0) return OPER;
-		if(str.Compare("MODE") == 0) return MODE;
-		if(str.Compare("SERVICE") == 0) return SERVICE;
-		if(str.Compare("QUIT") == 0) return QUIT;
-		if(str.Compare("SQUIT") == 0) return SQUIT;
-		if(str.Compare("JOIN") == 0) return JOIN;
-		if(str.Compare("PART") == 0) return PART;
-		if(str.Compare("TOPIC") == 0) return TOPIC;
-		if(str.Compare("NAMES") == 0) return NAMES;
-		if(str.Compare("LIST") == 0) return LIST;
-		if(str.Compare("INVITE") == 0) return INVITE;
-		if(str.Compare("KICK") == 0) return KICK;
-		if(str.Compare("PRIVMSG") == 0) return PRIVMSG;
-		if(str.Compare("NOTICE") == 0) return NOTICE;
-		if(str.Compare("MOTD") == 0) return MOTD;
-		if(str.Compare("LUSERS") == 0) return LUSERS;
-		if(str.Compare("VERSION") == 0) return VERSION;
-		if(str.Compare("STATS") == 0) return STATS;
-		if(str.Compare("LINKS") == 0) return LINKS;
-		if(str.Compare("TIME") == 0) return TIME;
-		if(str.Compare("CONNECT") == 0) return CONNECT;
-		if(str.Compare("TRACE") == 0) return TRACE;
-		if(str.Compare("ADMIN") == 0) return ADMIN;
-		if(str.Compare("INFO") == 0) return INFO;
-		if(str.Compare("SQUERY") == 0) return SQUERY;
-		if(str.Compare("WHO") == 0) return WHO;
-		if(str.Compare("WHOIS") == 0) return WHOIS;
-		if(str.Compare("WHOWAS") == 0) return WHOWAS;
-		if(str.Compare("KILL") == 0) return KILL;
-		if(str.Compare("PING") == 0) return PING;
-		if(str.Compare("PONG") == 0) return PONG;
-		if(str.Compare("ERROR") == 0) return ERROR_;
-		if(str.Compare("AWAY") == 0) return AWAY;
-		if(str.Compare("REHASH") == 0) return REHASH;
-		if(str.Compare("DIE") == 0) return DIE;
-		if(str.Compare("RESTART") == 0) return RESTART;
-		if(str.Compare("SUMMON") == 0) return SUMMON;
-		if(str.Compare("USERS") == 0) return USERS;
-		if(str.Compare("WALLOPS") == 0) return WALLOPS;
-		if(str.Compare("USERHOST") == 0) return USERHOST;
-		if(str.Compare("ISON") == 0) return ISON;
+		if(str.compare("PASS") == 0) return PASS;
+		if(str.compare("NICK") == 0) return NICK;
+		if(str.compare("USER") == 0) return USER;
+		if(str.compare("OPER") == 0) return OPER;
+		if(str.compare("MODE") == 0) return MODE;
+		if(str.compare("SERVICE") == 0) return SERVICE;
+		if(str.compare("QUIT") == 0) return QUIT;
+		if(str.compare("SQUIT") == 0) return SQUIT;
+		if(str.compare("JOIN") == 0) return JOIN;
+		if(str.compare("PART") == 0) return PART;
+		if(str.compare("TOPIC") == 0) return TOPIC;
+		if(str.compare("NAMES") == 0) return NAMES;
+		if(str.compare("LIST") == 0) return LIST;
+		if(str.compare("INVITE") == 0) return INVITE;
+		if(str.compare("KICK") == 0) return KICK;
+		if(str.compare("PRIVMSG") == 0) return PRIVMSG;
+		if(str.compare("NOTICE") == 0) return NOTICE;
+		if(str.compare("MOTD") == 0) return MOTD;
+		if(str.compare("LUSERS") == 0) return LUSERS;
+		if(str.compare("VERSION") == 0) return VERSION;
+		if(str.compare("STATS") == 0) return STATS;
+		if(str.compare("LINKS") == 0) return LINKS;
+		if(str.compare("TIME") == 0) return TIME;
+		if(str.compare("CONNECT") == 0) return CONNECT;
+		if(str.compare("TRACE") == 0) return TRACE;
+		if(str.compare("ADMIN") == 0) return ADMIN;
+		if(str.compare("INFO") == 0) return INFO;
+		if(str.compare("SQUERY") == 0) return SQUERY;
+		if(str.compare("WHO") == 0) return WHO;
+		if(str.compare("WHOIS") == 0) return WHOIS;
+		if(str.compare("WHOWAS") == 0) return WHOWAS;
+		if(str.compare("KILL") == 0) return KILL;
+		if(str.compare("PING") == 0) return PING;
+		if(str.compare("PONG") == 0) return PONG;
+		if(str.compare("ERROR") == 0) return ERROR_;
+		if(str.compare("AWAY") == 0) return AWAY;
+		if(str.compare("REHASH") == 0) return REHASH;
+		if(str.compare("DIE") == 0) return DIE;
+		if(str.compare("RESTART") == 0) return RESTART;
+		if(str.compare("SUMMON") == 0) return SUMMON;
+		if(str.compare("USERS") == 0) return USERS;
+		if(str.compare("WALLOPS") == 0) return WALLOPS;
+		if(str.compare("USERHOST") == 0) return USERHOST;
+		if(str.compare("ISON") == 0) return ISON;
 		std::istringstream iss;
 		unsigned short tmp = 0;
 		iss >> tmp;
 		return static_cast<Command>(tmp);
 	}
 
-	String IRCMessage::LookupCommandToString(Command cmd) const
+	std::string IRCMessage::LookupCommandToString(Command cmd) const
 	{
 		std::ostringstream oss;
 		switch(cmd)
@@ -242,7 +246,7 @@ namespace SteamIRC
 	void IRCMessage::Reset()
 	{
 		Cmnd = NICK;
-		numParams = 0;
+		Parameters.clear();
 	}
 
 	IRCMessage::~IRCMessage(void)

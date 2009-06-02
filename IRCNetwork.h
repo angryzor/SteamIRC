@@ -12,14 +12,13 @@ namespace SteamIRC {
 		public CIRCContextWithCommands
 	{
 	public:
-		CIRCNetwork(String uri, CIRCEnvironment& env, IRCUserInfo& usr);
+		CIRCNetwork(std::string uri, CIRCEnvironment& env, IRCUserInfo& usr);
 		virtual bool AcceptIncoming(const IRCMessage& msg);
-		virtual bool ProcessUserCommand(const String& cmnd, istringstream& params);
-		virtual void Join(String chan);
+		virtual bool ProcessUserCommand(const std::string& cmnd, istringstream& params);
+		virtual void Join(std::string chan);
 		virtual ~CIRCNetwork(void);
 	private:
 		CIRCNetwork& operator=(CIRCNetwork&);
-		CIRCEnvironment& env_;
 		IRCUserInfo& usr_;
 	};
 

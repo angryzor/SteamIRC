@@ -35,7 +35,7 @@ namespace SteamIRC {
 
 		Msg( "vguiEngine PANEL_GAMEUIDLL = %d\r\n", vguiEngine_->GetPanel( PANEL_GAMEUIDLL ));
 
-		panel_ = new CIRCPanel(vguiEngine_->GetPanel( PANEL_GAMEUIDLL ), vguiEngine_, vguiScheme_, env_);
+		panel_ = new CIRCPanel(vguiEngine_->GetPanel( PANEL_GAMEUIDLL ), vguiEngine_, vguiScheme_, env_, vguiLocalize_);
 	}
 
 	void IRCGui::DestroyPanel(void) {
@@ -47,7 +47,8 @@ namespace SteamIRC {
 	}
 
 	void IRCGui::Update() {
-		panel_->Update();
+		if(panel_)
+			panel_->Update();
 	}
 
 }

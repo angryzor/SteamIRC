@@ -1,31 +1,59 @@
 #include "IRCContextWithCommands.h"
+#include <algorithm>
 
 namespace SteamIRC {
 
-	CIRCContextWithCommands::CIRCContextWithCommands(String title) : CIRCContext(title)
+	CIRCContextWithCommands::CIRCContextWithCommands(std::string title, CIRCEnvironment& env) : CIRCContext(title), env_(env)
 	{
 	}
 
-	bool CIRCContextWithCommands::UserInput(const String& txt) {
+	bool CIRCContextWithCommands::UserInput(const std::string& txt) {
 		try {
 			if(txt[0] == '/') {
 				// Is a command.
 				std::istringstream iss;
 				iss.str(txt.substr(1));
 
-				String cmnd;
+				std::string cmnd;
 				iss >> cmnd;
-				cmnd.ToLower();
+				std::transform(cmnd.begin(), cmnd.end(), cmnd.begin(), ::tolower);
 
-				return ProcessUserCommand(cmnd, iss);
+				if(!ProcessUserCommand(cmnd, iss))
+					throw std::runtime_error("Command does not exist.");
+				return true;
 			}
 			return false;
 		}
 		catch(std::runtime_error e) {
-			buffer_ += String("ERROR: ") + e.what();
+			buffer_ += std::string("ERROR: ") + e.what() + "\n";
 			return true;
 		}
 	}
+	
+	bool CIRCContextWithCommands::AcceptIncoming(const IRCMessage& msg) {
+		switch(msg.Cmnd) {
+		case NOTICE:
+			if(msg.Parameters[0] != env_.GetUInfo()->Nick) return false;
+
+			buffer_ += "-";
+			buffer_ += msg.Origin.nick;
+			buffer_ += "- ";
+			buffer_ += msg.Parameters[1];
+			buffer_ += "\n";
+			break;
+		case RPL_AWAY:
+			if(msg.Parameters[0] != env_.GetUInfo()->Nick) return false;
+			buffer_ += msg.Parameters[1];
+			buffer_ += " is away (";
+			buffer_ += msg.Parameters[2];
+			buffer_ += ")\n";
+			break;
+		default:
+			return false;
+		}
+		return true;
+	}
+
 
 	CIRCContextWithCommands::~CIRCContextWithCommands(void)
 	{

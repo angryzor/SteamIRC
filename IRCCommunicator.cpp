@@ -2,16 +2,21 @@
 
 namespace SteamIRC {
 
-	CIRCCommunicator::CIRCCommunicator(String id, CIRCEnvironment& env) : id_(id), env_(env), CIRCContextWithCommands(id)
+	CIRCCommunicator::CIRCCommunicator(std::string id, CIRCEnvironment& env) : id_(id), CIRCContextWithCommands(id, env)
 	{
 	}
 
-	bool CIRCCommunicator::UserInput(const String& txt) {
+	bool CIRCCommunicator::UserInput(const std::string& txt) {
 		if(!CIRCContextWithCommands::UserInput(txt)) {
 			IRCMessage msg(PRIVMSG);
-			msg.SetParam(0, id_);
-			msg.SetParam(1, txt);
+			msg.AddParam(id_);
+			msg.AddParam(txt);
 			env_.Send(msg);
+			buffer_ += "<";
+			buffer_ += env_.GetUInfo()->Nick;
+			buffer_ += "> ";
+			buffer_ += txt;
+			buffer_ += "\n";
 		}
 		return true;
 	}
@@ -19,14 +24,18 @@ namespace SteamIRC {
 	bool CIRCCommunicator::AcceptIncoming(const IRCMessage& msg) {
 		switch(msg.Cmnd) {
 		case PRIVMSG:
-			if(msg.Origin.nick == id_) {
-				buffer_ += msg.Parameters[0] + "\r\n";
-				return true;
-			}
-			return false;
+			if(msg.Parameters[0] != id_) return CIRCContextWithCommands::AcceptIncoming(msg);
+
+			buffer_ += "<";
+			buffer_ += msg.Origin.nick;
+			buffer_ += "> ";
+			buffer_ += msg.Parameters[1];
+			buffer_ += "\n";
+			break;
 		default:
-			return false;
+			return CIRCContextWithCommands::AcceptIncoming(msg);
 		}
+		return true;
 	}
 
 	CIRCCommunicator::~CIRCCommunicator(void)

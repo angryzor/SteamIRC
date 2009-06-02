@@ -2,6 +2,7 @@
 #include "TCPClient.h"
 
 #define TCP_RECV_BUF_LEN 512
+#include "eiface.h"
 
 // memdbgon must be the last include file in a .cpp file!!!
 #include "tier0/memdbgon.h"
@@ -18,7 +19,7 @@ namespace SteamIRC
 			infoHints.ai_protocol = IPPROTO_TCP;
 		}
 
-		void CTCPClient::Connect(String hosturi, String port) throw(std::runtime_error)
+		void CTCPClient::Connect(std::string hosturi, std::string port) throw(std::runtime_error)
 		{
 			if(sock != INVALID_SOCKET) throw std::logic_error(_T("Connection already established!"));
 			addrinfo* results;
@@ -27,7 +28,7 @@ namespace SteamIRC
 
 			try {
 				// Resolve host name
-				res = getaddrinfo(hosturi, port, &infoHints, &results);
+				res = getaddrinfo(hosturi.c_str(), port.c_str(), &infoHints, &results);
 				switch(res)
 				{
 				case EAI_AGAIN:
@@ -73,7 +74,7 @@ namespace SteamIRC
 			}
 		}
 
-		void CTCPClient::Send(const String& data)
+		void CTCPClient::Send(const std::string& data)
 		{
 			try
 			{
@@ -81,23 +82,23 @@ namespace SteamIRC
 
 				if(sock == INVALID_SOCKET) throw std::logic_error(_T("Invalid socket."));
 
-				res = send(sock, data, data.length(), NULL);
+				res = send(sock, data.c_str(), data.length(), NULL);
 				if(res == SOCKET_ERROR)
 				{
 					throw std::logic_error(_T("Can't send data"));
 				}
 			}
 			catch(std::logic_error err) {
-				Warning(String(_T("Sending error: ")) + err.what());
+				Warning((std::string(_T("Sending error: ")) + err.what()).c_str());
 			}
 		}
 
-		String CTCPClient::Recv()
+		std::string CTCPClient::Recv()
 		{
 			try
 			{
 				int res;
-				char buf[TCP_RECV_BUF_LEN];
+				char buf[TCP_RECV_BUF_LEN+1];
 				ZeroMemory(buf, sizeof(buf));
 
 				if(sock == INVALID_SOCKET) throw std::logic_error(_T("Invalid socket."));
@@ -107,10 +108,11 @@ namespace SteamIRC
 				{
 					throw std::logic_error(_T("Can't recieve data"));
 				}
+
 				return buf;
 			}
 			catch(std::logic_error err) {
-				Warning(String(_T("Receiving error: ")) + err.what());
+				Warning((std::string(_T("Receiving error: ")) + err.what()).c_str());
 				return "";
 			}
 		}
@@ -134,7 +136,7 @@ namespace SteamIRC
 				return true;
 			}
 			catch(std::logic_error err) {
-				Warning(String(_T("Receiving error: ")) + err.what());
+				Warning((std::string(_T("Receiving error: ")) + err.what()).c_str());
 				return false;
 			}
 		}

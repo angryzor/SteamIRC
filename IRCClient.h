@@ -8,6 +8,7 @@
 #include "IRCDataStructures.h"
 #include "IRCMessage.h"
 #include "IRCEnvironment.h"
+#include <vector>
 
 
 namespace SteamIRC
@@ -18,24 +19,18 @@ namespace SteamIRC
 	{
 	public:
 		CIRCClient(CIRCEnvironment& env);
-		virtual void Connect(String hosturi, String port, IRCUserInfo& uInfo);
+		virtual void Connect(std::string hosturi, std::string port, IRCUserInfo& uInfo);
 		virtual void DoRecv();
-		virtual int TransformToArray(String rStr, String** outCmndArr);
+		virtual std::vector<std::string> TransformToVector(std::string rStr);
 		virtual void Send(const IRCMessage& msg);
 		virtual void Disconnect(void);
 		virtual ~CIRCClient(void);
 	private:
 		CIRCClient& operator=(CIRCClient&);
-		String leftOverCmnd;
-		bool wasLeftOver;
+		std::string leftOverCmnd;
 		CRITICAL_SECTION csSend;
 		CIRCEnvironment& env_;
 	};
-
-
-
-// UNBEAUTIFUL CODE ___ SHOULD BE REWRITTEN WHEN IN THE MOOD
-	int StringSplit(const String& str, String** arr, const String& splitchar);
 }
 
 

@@ -1,12 +1,12 @@
 #pragma once
-
+#include <string>
 namespace SteamIRC
 {
 	struct IRCUserInfo
 	{
-		String Nick;
-		String UserName;
-		DWORD autoModeBM;
-		String RealName;
+		std::string Nick;
+		std::string UserName;
+		unsigned long autoModeBM;
+		std::string RealName;
 	};
 }

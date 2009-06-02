@@ -476,11 +476,15 @@
 		<Filter
 			Name="StdString"
 			>
-			<File
-				RelativePath=".\StdString.h"
-				>
-			</File>
 		</Filter>
+		<File
+			RelativePath=".\IRCChannelUser.cpp"
+			>
+		</File>
+		<File
+			RelativePath=".\IRCChannelUser.h"
+			>
+		</File>
 	</Files>
 	<Globals>
 	</Globals>

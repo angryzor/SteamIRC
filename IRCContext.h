@@ -1,5 +1,5 @@
 #pragma once
-#include "StdString.h"
+#include <string>
 #include "IRCMessage.h"
 
 namespace SteamIRC {
@@ -7,15 +7,15 @@ namespace SteamIRC {
 	class CIRCContext
 	{
 	public:
-		virtual bool UserInput(const String& txt) = 0;
+		virtual bool UserInput(const std::string& txt) = 0;
 		virtual bool AcceptIncoming(const IRCMessage& msg) = 0;
 		virtual ~CIRCContext(void);
-		String GetBuffer() const;
-		String GetTitle() const;
+		std::string GetBuffer() const;
+		std::string GetTitle() const;
 	protected:
-		CIRCContext(String title);
-		String buffer_;
-		String title_;
+		CIRCContext(std::string title);
+		std::string buffer_;
+		std::string title_;
 	};
 
 }

@@ -1,6 +1,7 @@
 #pragma once
 
-#include "StdString.h"
+#include <string>
+#include <vector>
 
 namespace SteamIRC
 {
@@ -57,52 +58,55 @@ namespace SteamIRC
 	};
 
 	struct IRCOrigin {
-		IRCOrigin(const String& str) {
-			int iat(str.Find("@"));
-			if(iat == -1) {
+		IRCOrigin(const std::string& str) {
+			std::string::size_type iat(str.find("@"));
+			if(iat == str.npos) {
 				addr = str;
 				return;
 			}
 			else addr = str.substr(iat + 1);
 
-			int iexcl = str.Find("!");
-			if(iexcl == -1)
+			std::string::size_type iexcl = str.find("!");
+			if(iexcl == str.npos)
 				user = str.substr(0,iat);
 			else {
 				nick = str.substr(0,iexcl);
 				user = str.substr(iexcl+1, iat-iexcl);
 			}
 		}
-		String toStr() const{
-			return nick + String("!") + user + String("@") + addr;
+		std::string toStr() const{
+			return nick + std::string("!") + user + std::string("@") + addr;
 		}
-		String nick;
-		String user;
-		String addr;
+		std::string nick;
+		std::string user;
+		std::string addr;
 	};
 
 	class IRCMessage
 	{
 	public:
+		typedef std::vector<std::string> param_vec;
 		IRCMessage(void);
-		IRCMessage(String& msgStr);
+		IRCMessage(std::string& msgStr);
 		IRCMessage(Command cmd);
-		virtual void ProcessString(String& msgStr);
-		virtual String GetString(bool includeOrigin = true) const;
+		void ProcessString(const std::string& msgStr);
+		std::string GetString(bool includeOrigin = true) const;
 		virtual ~IRCMessage(void);
-		virtual void SetCommand(Command cmd);
-		virtual void SetParam(unsigned char index, String val);
-		virtual void SetParam(unsigned char index, int val);
-		virtual void Reset();
+		void SetCommand(Command cmd);
+		void SetParam(int index, std::string val);
+		void SetParam(int index, int val);
+		void AddParam(std::string val);
+		void AddParam(int val);
+		void Reset();
 
 	protected:
-		virtual Command LookupStringToCommand(const String& str) const;
-		virtual String LookupCommandToString(Command cmd) const;
+		virtual Command LookupStringToCommand(const std::string& str) const;
+		virtual std::string LookupCommandToString(Command cmd) const;
 	public:
 		IRCOrigin Origin;
-		String Parameters[15]; // a message can have a maximum of 15 params
+		param_vec Parameters; // a message can have a maximum of 15 params
 		Command Cmnd;
 	private:
-		unsigned char numParams;
+//		unsigned char numParams;
 	};
 }
