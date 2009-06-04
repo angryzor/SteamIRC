@@ -3,6 +3,7 @@
 
 // memdbgon must be the last include file in a .cpp file!!!
 #include "tier0/memdbgon.h"
+#include <ctime>
 
 namespace SteamIRC
 {
@@ -32,11 +33,11 @@ namespace SteamIRC
 			if(msg.Parameters[0] != id_) return CIRCCommunicator::AcceptIncoming(msg);
 
 			chanfolk_.insert(chanfolk_.end(), IRCChannelUser(msg.Origin.nick));
-			buffer_ += "* ";
+			buffer_ += "\x03" "03* ";
 			buffer_ += msg.Origin.nick;
 			buffer_ += " has joined ";
 			buffer_ += id_;
-			buffer_ += ".\n";
+			buffer_ += ".\x03\n";
 			reply.Reset();
 			reply.SetCommand(NAMES);
 			reply.AddParam(id_);
@@ -48,7 +49,7 @@ namespace SteamIRC
 			EraseNick(msg.Origin.nick);
 			if(msg.Origin.nick == env_.GetUInfo()->Nick) DestroyChannel();
 			else {
-				buffer_ += "* ";
+				buffer_ += "\x03" "03* ";
 				buffer_ += msg.Origin.nick;
 				buffer_ += " left ";
 				buffer_ += id_;
@@ -58,56 +59,56 @@ namespace SteamIRC
 					buffer_ += msg.Parameters[1];
 					buffer_ += ")";
 				}
-				buffer_ += "\n";
+				buffer_ += "\x03\n";
 			}
 			break;
 		case QUIT:
 			if((iter = FindByNick(msg.Origin.nick)) != chanfolk_.end()) { 
 				chanfolk_.erase(iter);
-				buffer_ += "* ";
+				buffer_ += "\x03" "02* ";
 				buffer_ += msg.Origin.nick;
 				buffer_ += " quit.";
-				if(msg.Parameters.size() > 1) {
+				if(msg.Parameters.size() > 0) {
 					buffer_ += " (";
-					buffer_ += msg.Parameters[1];
+					buffer_ += msg.Parameters[0];
 					buffer_ += ")";
 				}
-				buffer_ += "\n";
+				buffer_ += "\x03\n";
 			}
 			return CIRCCommunicator::AcceptIncoming(msg);
 		case NOTICE:
 			if(msg.Parameters[0] != id_) return CIRCCommunicator::AcceptIncoming(msg);
 
-			buffer_ += "-";
+			buffer_ += "\x03" "05-";
 			buffer_ += msg.Origin.nick;
 			buffer_ += ":";
 			buffer_ += msg.Parameters[0];
 			buffer_ += "- ";
 			buffer_ += msg.Parameters[1];
-			buffer_ += "\n";
+			buffer_ += "\x03\n";
 			break;
 		case TOPIC:
 			if(msg.Parameters[0] != id_) return CIRCCommunicator::AcceptIncoming(msg);
 
 			if(msg.Origin.nick == "") {
-				buffer_ += "* Channel topic is ";
+				buffer_ += "\x03" "03* Channel topic is ";
 			}
 			else {
-				buffer_ += "* ";
+				buffer_ += "\x03" "03* ";
 				buffer_ += msg.Origin.nick;
 				buffer_ += " sets topic ";
 			}
 			buffer_ += msg.Parameters[1];
-			buffer_ += "\n";
+			buffer_ += "\x03\n";
 			break;
 		case MODE:
 			if(msg.Parameters[0] != id_) return CIRCCommunicator::AcceptIncoming(msg);
 
 			if(msg.Origin.nick == "") {
-				buffer_ += "* Channel mode is ";
+				buffer_ += "\x03" "03* Channel mode is ";
 			}
 			else {
-				buffer_ += "* ";
+				buffer_ += "\x03" "03* ";
 				buffer_ += msg.Origin.nick;
 				buffer_ += " sets mode ";
 			}
@@ -115,7 +116,7 @@ namespace SteamIRC
 				buffer_ += *i;
 				buffer_ += " ";
 			}
-			buffer_ += "\n";
+			buffer_ += "\x03\n";
 			reply.Reset();
 			reply.SetCommand(NAMES);
 			reply.AddParam(id_);
@@ -124,14 +125,29 @@ namespace SteamIRC
 		case RPL_TOPIC:
 			if(msg.Parameters[0] != env_.GetUInfo()->Nick
 				|| msg.Parameters[1] != id_) return CIRCCommunicator::AcceptIncoming(msg);
-			buffer_ += "* Topic is: ";
+			buffer_ += "\x03" "03* Topic is: ";
 			buffer_ += msg.Parameters[2];
-			buffer_ += "\n";
+			buffer_ += "\x03\n";
+			break;
+		case RPL_TOPICTIMESTAMP:
+			{
+				if(msg.Parameters[0] != env_.GetUInfo()->Nick
+					|| msg.Parameters[1] != id_) return CIRCCommunicator::AcceptIncoming(msg);
+				iss.str(msg.Parameters[3]);
+				time_t rawtime;
+				if(!(iss >> rawtime)) return CIRCCommunicator::AcceptIncoming(msg);
+				tm* timeinfo;
+				timeinfo = localtime(&rawtime);
+				buffer_ += "\x03" "03* Topic set by ";
+				buffer_ += msg.Parameters[2];
+				buffer_ += " at ";
+				buffer_ += asctime(timeinfo); // No pretty conventional decolor--newline... This bitchs adds a newline itself.
+			}
 			break;
 		case RPL_NOTOPIC:
 			if(msg.Parameters[0] != env_.GetUInfo()->Nick
 				|| msg.Parameters[1] != id_) return CIRCCommunicator::AcceptIncoming(msg);
-			buffer_ += "* No topic is set.\n";
+			buffer_ += "\x03" "03* No topic is set.\n";
 			break;
 		case RPL_NAMREPLY:
 			if(msg.Parameters[0] != env_.GetUInfo()->Nick
@@ -160,10 +176,10 @@ namespace SteamIRC
 			Part(params);
 			return true;
 		}
-		return false;
+		return CIRCCommunicator::ProcessUserCommand(cmnd, params);
 	}
 
-	chanfolk_set::iterator CIRCChannel::FindByNick(std::string nick) {
+	CIRCChannel::chanfolk_set::iterator CIRCChannel::FindByNick(std::string nick) {
 		for( chanfolk_set::iterator i = chanfolk_.begin(); i != chanfolk_.end(); i++)
 			if(i->GetNick() == nick) {
 				return i;

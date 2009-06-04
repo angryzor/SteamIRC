@@ -6,6 +6,7 @@
 #include "IRCPanel.h"
 #include <stdexcept>
 #include "vgui/ILocalize.h"
+#include <windows.h>
 
 
 namespace SteamIRC {
@@ -26,7 +27,7 @@ namespace SteamIRC {
 		ISchemeManager*	 vguiScheme_;
 		ILocalize* vguiLocalize_;
 		CIRCEnvironment& env_;
-
+		CRITICAL_SECTION cs;
 		CIRCPanel* panel_;
 	};
 }

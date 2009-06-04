@@ -34,7 +34,7 @@ namespace SteamIRC
 		Send(msg);
 		
 		env_.SetUInfo(uInfo);
-		env_.Add(new CIRCNetwork(hosturi, env_, uInfo));
+		env_.Add(new CIRCNetwork(hosturi, env_));
 	}
 
 //=====================================================================
@@ -101,7 +101,7 @@ namespace SteamIRC
 
 	void CIRCClient::Disconnect(void)
 	{
-		CTCPClient::Send(std::string("QUIT\r\n"));
+		CTCPClient::Send(std::string("QUIT :SteamIRC v0.1a disconnecting\r\n"));
 		CTCPClient::Disconnect();
 	}
 		

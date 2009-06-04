@@ -1,34 +1,23 @@
 #include "SteamIRCPlugin.h"
 #include "interface.h"
-#include "filesystem.h"
-#include "game/server/iplayerinfo.h"
 #include "eiface.h"
-#include "igameevents.h"
 #include "convar.h"
-#include "Color.h"
-#include "vstdlib/random.h"
-#include "engine/IEngineTrace.h"
 #include "tier2/tier2.h"
 #include "tier3/tier3.h"
-#include "IRCWinSock2.h"
-#include "IRCClient.h"
-#include "Object.h"
-#include "IRCEnvironment.h"
-#include "IRCGui.h"
 #include <stdexcept>
 
 // memdbgon must be the last include file in a .cpp file!!!
 #include "tier0/memdbgon.h"
 
 using namespace SteamIRC;
+static SteamIRC::IRC* irc = NULL;
+static int improvisedSemaphore = 0;
 
-IRCGui* gui = NULL;
-CIRCWinSock2 sockEngine;
-CIRCClient* ircClient = NULL;
-CIRCEnvironment ircEnv;
-HANDLE tRecv = NULL;
-bool runRecv = false;
-IRCUserInfo uInfo;
+static ConVar irc_nick("irc_nickname", "angryzor", 0, "The nickname you will be using on IRC servers.");
+static ConVar irc_user("irc_username", "tf2player1215", 0, "Your username for the IRC server. Is only displayed in WHOIS queries.");
+static ConVar irc_real_name("irc_real_name", "Heavy Weapons Guy", 0, "Your real name. Is only displayed in WHOIS queries.");
+static ConVar irc_hostname("irc_hostname", "irc.quakenet.org", 0, "The IRC host to connect to on next \"irc_connect\" call.");
+static ConVar irc_hostport("irc_host_port", "6667", 0, "Port number to connect to. Mostly in the range of 6666-6669");
 
 CSteamIRCPlugin::CSteamIRCPlugin(void) : m_iClientCommandIndex(0)
 {
@@ -50,26 +39,26 @@ bool CSteamIRCPlugin::Load(	CreateInterfaceFn interfaceFactory, CreateInterfaceF
 	Msg(" Written by angryzor\r\n");
 	Msg("--------------------------------------------------------------\r\n");
 	Msg(" Booting...\r\n");
-	Msg(" Starting GUI system...\r\n");
-
+	improvisedSemaphore++;
 	try { 
-		gui = new IRCGui(interfaceFactory, ircEnv); 
+		if(irc)
+			throw std::runtime_error("Already an instance of the irc provider running!!!");
+		else
+			irc = new IRC(interfaceFactory);
 	}
 	catch(std::runtime_error err) {
 		Warning(err.what());
-		Warning("Aborting.");
+		Warning("Aborting.\r\n");
+		DisconnectTier3Libraries( );
+		DisconnectTier2Libraries( );
+		DisconnectTier1Libraries( );
 		return false;
 	}
-	ircEnv.SetGui(gui);
 
 	Msg(" Registering ConVars...\r\n");
 	ConVar_Register( 0 );
-
-//	InitializeCriticalSection(&csRecv);
-
-	ircClient = sockEngine.MakeIRCClient(ircEnv);
-
 	Msg(" Boot successful! SteamIRC ready.\r\n");
+	Msg("==============================================================\r\n");
 	return true;
 }
 
@@ -78,26 +67,19 @@ bool CSteamIRCPlugin::Load(	CreateInterfaceFn interfaceFactory, CreateInterfaceF
 //---------------------------------------------------------------------------------
 void CSteamIRCPlugin::Unload( void )
 {
-	if(runRecv) {
-		// Alert the recvthread that it should stop processing messages and wait for it to finish
-		runRecv = false;
-		WaitForSingleObject(tRecv,INFINITE);
-
-		ircClient->Disconnect();
-		ircEnv.Cleanup();
+	if(irc && (improvisedSemaphore <= 1)) {
+		delete irc;
+		irc = NULL;
 	}
 
-	delete ircClient;
-	ircClient = NULL;
+	if(improvisedSemaphore == 1) {
+		ConVar_Unregister( );
+		DisconnectTier3Libraries( );
+		DisconnectTier2Libraries( );
+		DisconnectTier1Libraries( );
+	}
 
-	gui->DestroyPanel();
-	delete gui;
-//	DeleteCriticalSection(&csRecv);
-
-	ConVar_Unregister( );
-	DisconnectTier3Libraries( );
-	DisconnectTier2Libraries( );
-	DisconnectTier1Libraries( );
+	improvisedSemaphore--;
 }
 
 //---------------------------------------------------------------------------------
@@ -216,98 +198,31 @@ PLUGIN_RESULT CSteamIRCPlugin::NetworkIDValidated( const char *pszUserName, cons
 //---------------------------------------------------------------------------------
 void CSteamIRCPlugin::OnQueryCvarValueFinished( QueryCvarCookie_t iCookie, edict_t *pPlayerEntity, EQueryCvarValueStatus eStatus, const char *pCvarName, const char *pCvarValue )
 {
-	Msg( "Cvar query (cookie: %d, status: %d) - name: %s, value: %s\n", iCookie, eStatus, pCvarName, pCvarValue );
 }
 
-DWORD WINAPI recvthread(void* lpThreadParameter)
-{
-	while(runRecv)
-	{
-		if(ircClient->CheckRecv())
-			ircClient->DoRecv();
-		else
-			Sleep(500);
-	}
-	return EXIT_SUCCESS;
-}
 
 CON_COMMAND( irc_connect, "Connects to an IRC server" )
 {
-	try
-	{
-		tRecv = NULL;
-		uInfo.Nick =       args[3];
-		uInfo.UserName =   args[4];
-		uInfo.autoModeBM = 8;
-		uInfo.RealName =   args[5];
+	SteamIRC::IRCUserInfo uInfo = {	irc_nick.GetString(),
+									irc_user.GetString(),
+									8,
+									irc_real_name.GetString()};
 
-		// Connect our client
-		ircClient->Connect(args[1], args[2], uInfo);
-
-		// Create the receive thread
-		runRecv = true;
-		tRecv = CreateThread(NULL, 0, &recvthread, 0, 0, NULL);
-	}
-	catch(std::runtime_error err)
-	{
-		Warning(err.what());
-	}
-}
-
-CON_COMMAND( irc_chat4allconnect, "Debug - Connects to Chat4all IRC server" )
-{
-	try
-	{
-		tRecv = NULL;
-		uInfo.Nick =       "Ruben";
-		uInfo.UserName =   "ruben_tytgat";
-		uInfo.autoModeBM = 3;
-		uInfo.RealName =   "Ruben Tytgat";
-
-		// Connect our client
-		ircClient->Connect("irc.chat4all.org", "6667", uInfo);
-
-		// Create the receive thread
-		runRecv = true;
-		tRecv = CreateThread(NULL, 0, &recvthread, 0, 0, NULL);
-	}
-	catch(std::logic_error err)
-	{
-		Warning(err.what());
-	}
+	irc->Connect(irc_hostname.GetString(), irc_hostport.GetString(), uInfo);
 }
 
 CON_COMMAND( irc_disconnect, "Disconnects from IRC server" )
 {
-	if(runRecv) {
-		// Alert the recvthread that it should stop processing messages and wait for it to finish
-		runRecv = false;
-		WaitForSingleObject(tRecv,INFINITE);
-
-		ircClient->Disconnect();
-
-		ircEnv.Cleanup();
-	}
+	irc->Disconnect();
 }
 
-CON_COMMAND( irc_show, "shows the irc window" )
+CON_COMMAND( irc_guishow, "Shows the irc GUI" )
 {
-
-	try {
-		gui->CreatePanel();
-		gui->Update();
-	}
-	catch(std::logic_error err) {
-		Warning(err.what());
-		return;
-	}
-	Msg( "Completed.\n" );
+	irc->ShowGUI();
 }
 
-CON_COMMAND( irc_unshow, "destroys the irc window" )
+CON_COMMAND( irc_guihide, "Destroys the irc GUI" )
 {
-	Msg( "deleting" );
-
-	gui->DestroyPanel();
-	Msg( "Completed." );
+	irc->HideGUI();
 }
+

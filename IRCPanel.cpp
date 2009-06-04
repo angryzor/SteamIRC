@@ -4,27 +4,31 @@
 #include "vgui_controls/RichText.h"
 #include "vgui_controls/Label.h"
 #include "vgui_controls/ListPanel.h"
+#include "vgui_controls/Button.h"
 
 #include "IRCContext.h"
 #include "IRCGui.h"
 #include "IRCChannel.h"
 #include <string>
-#include <math>
+#include <sstream>
 // memdbgon must be the last include file in a .cpp file!!! 
 #include "tier0/memdbgon.h"
 
-#define IS_NUMBER(x) (x >= 30 && x <= 39)
-
 namespace SteamIRC {
+	struct nullstream:
+	  std::ostream {
+		nullstream(): std::ios(0), std::ostream(0) {}
+	};
+
 	CIRCPanel::CIRCPanel( vgui::VPANEL parent, IEngineVGui* vguiEngine,	ISchemeManager* vguiScheme, CIRCEnvironment& env, ILocalize* loc)
-		: BaseClass( NULL, "IRCPanel" ), env_(env), loc_(loc)
+		: BaseClass( NULL, "IRCPanel" ), scheme_(vguiScheme), env_(env), loc_(loc)
 	{
 		SetParent(parent);
 		SetProportional( true );
 		SetTitleBarVisible( true );
 		SetMinimizeButtonVisible( false );
 		SetMaximizeButtonVisible( false );
-		SetCloseButtonVisible( true );
+		SetCloseButtonVisible( false );
 		SetSizeable( true );
 		SetMoveable( true );
 		SetVisible( true );
@@ -46,6 +50,7 @@ namespace SteamIRC {
 		//SetMoveable(false);
 	}
 
+	CIRCPanel::~CIRCPanel() {}
 	void CIRCPanel::OnCommand(const char* pcCommand) {
 		if(strcmp(pcCommand, "Send") == 0) {
 			TextEntry* msgf = static_cast<TextEntry*>(FindChildByName("MessageField"));
@@ -76,6 +81,25 @@ namespace SteamIRC {
 		}
 	}
 
+	void CIRCPanel::PerformLayout() {
+		Frame::PerformLayout();
+		ListPanel* cfolk = static_cast<ListPanel*>(FindChildByName("ChanFolkList"));
+		TextEntry* msgf = static_cast<TextEntry*>(FindChildByName("MessageField"));
+		Button* send = static_cast<Button*>(FindChildByName("send"));
+		if(!cfolk || !msgf || !send) return;
+
+		int wide = this->GetWide();
+		int tall = this->GetTall();
+		int x;
+		int y;
+
+		cfolk->GetPos(x,y);
+		cfolk->SetPos(wide - scheme_->GetProportionalScaledValueEx(GetScheme(), 120),y);
+		msgf->GetPos(x,y);
+		msgf->SetPos(x,tall - scheme_->GetProportionalScaledValueEx(GetScheme(), 24));
+		send->SetPos(wide - scheme_->GetProportionalScaledValueEx(GetScheme(), 95), tall - scheme_->GetProportionalScaledValueEx(GetScheme(), 24));
+	}
+
 
 	void CIRCPanel::Update() {
 		if(!env_.GetActiveContext()) return;
@@ -91,41 +115,110 @@ namespace SteamIRC {
 		
 		lbl->SetText(env_.GetActiveContext()->GetTitle().c_str());
 	}
+ 
+	Color CIRCPanel::ColorPick(std::string& tmp, std::string::size_type& loc) {
+		switch(tmp[loc]) {
+		case '0':
+			switch(tmp[loc+1]) {
+				case '0':
+					loc += 2; return Color(0xff,0xff,0xff,0xff);
+				case '1':
+					loc += 2; return Color(0x00,0x00,0x00,0xff);
+				case '2':
+					loc += 2; return Color(0x00,0x00,0x7f,0xff);
+				case '3':
+					loc += 2; return Color(0x00,0x93,0x00,0xff);
+				case '4':
+					loc += 2; return Color(0xff,0x00,0x00,0xff);
+				case '5':
+					loc += 2; return Color(0x7f,0x00,0x00,0xff);
+				case '6':
+					loc += 2; return Color(0x9c,0x00,0x9c,0xff);
+				case '7':
+					loc += 2; return Color(0xfc,0x7f,0x00,0xff);
+				case '8':
+					loc += 2; return Color(0xff,0xff,0x00,0xff);
+				case '9':
+					loc += 2; return Color(0x00,0xfc,0x00,0xff);
+				default:
+					loc += 1; return Color(0xff,0xff,0xff,0xff);
+			}
+		case '1':
+			switch(tmp[loc+1]) {
+			case '0':
+				loc += 2; return Color(0x00,0x93,0x93,0xff);
+			case '1':
+				loc += 2; return Color(0x00,0xff,0xff,0xff);
+			case '2':
+				loc += 2; return Color(0x00,0x00,0xfc,0xff);
+			case '3':
+				loc += 2; return Color(0xff,0x00,0xff,0xff);
+			case '4':
+				loc += 2; return Color(0x7f,0x7f,0x7f,0xff);
+			case '5':
+				loc += 2; return Color(0xd2,0xd2,0xd2,0xff);
+			default:
+				loc += 1; return Color(0x00,0x00,0x00,0xff);
+			}
+		case '2':
+			loc += 1; return Color(0x00,0x00,0x7f,0xff);
+		case '3':
+			loc += 1; return Color(0x00,0x93,0x00,0xff);
+		case '4':
+			loc += 1; return Color(0xff,0x00,0x00,0xff);
+		case '5':
+			loc += 1; return Color(0x7f,0x00,0x00,0xff);
+		case '6':
+			loc += 1; return Color(0x9c,0x00,0x9c,0xff);
+		case '7':
+			loc += 1; return Color(0xfc,0x7f,0x00,0xff);
+		case '8':
+			loc += 1; return Color(0xff,0xff,0x00,0xff);
+		case '9':
+			loc += 1; return Color(0x00,0xfc,0x00,0xff);
+		default:
+			return Color(0xb2,0xb2,0xb2,0xff);
+		}
+	}
 
 	void CIRCPanel::UpdateOutputField() {
 		RichText* out = static_cast<RichText*>(FindChildByName("OutputField"));
 		if(!out) return;
 
+		out->SetText("");
 		std::string tmp(env_.GetActiveContext()->GetBuffer());
-		std::string::size_type from(0);
+		std::ostringstream oss;
+
 		std::string::size_type loc(0);
-		while((loc = min(tmp.find("\x03",from), tmp.find("\x15",from))) != tmp.npos) {
-			ConvertAndMoveToOF(out, tmp.substr(from, loc-from));
 
-			// UGLY UGLY UGLY
-			if(tmp[loc] == '\x03') {
-				std::string col;
-				std::string colback;
-				if(!IS_NUMBER(tmp[loc+1])) {
-					col = "-1";
-					colback = "-1";
-				}
-				else if(tmp[loc+2] == ',' && IS_NUMBER(tmp[loc+3])) {
-					col = tmp.substr(loc+1,1);
-					if(IS_NUMBER(tmp[loc+4])) {
-						colback = tmp.substr(loc+3,2);
-						from = loc+5;
-					}
-					else {
-						colback = tmp.substr(loc+3,1);
-						from = loc+4;
-					}
-				}
-				else if(IS_NUMBER(tmp[loc+2]) && tmp[loc+3] == ',' && IS_NUMBER(tmp[loc+4])) col = tmp.substr(loc+1,2);
-
-				
-
+		while(loc < tmp.size()) {
+			switch(tmp[loc]) {
+			case 3:
+				ConvertAndMoveToOF(out, oss.str());
+				oss.str("");
+				out->InsertColorChange(ColorPick(tmp, ++loc));
+				if(tmp[loc] == ',')
+					 ColorPick(tmp,++loc);
+				break;
+			case 15:
+				ConvertAndMoveToOF(out, oss.str());
+				oss.str("");
+				out->InsertColorChange(Color(0xb2,0xb2,0xb2,0xff));
+				loc++;
+				break;
+			case '\n':
+				oss << '\n';
+				ConvertAndMoveToOF(out, oss.str());
+				oss.str("");
+				out->InsertColorChange(Color(0xb2,0xb2,0xb2,0xff));
+				loc++;
+				break;
+			default:
+				oss << tmp[loc++];
+				break;
+			}
 		}
+		ConvertAndMoveToOF(out, oss.str());
 		out->GotoTextEnd();
 	}
 

@@ -1,5 +1,6 @@
 #include "IRCContext.h"
 
+#include "tier0/memdbgon.h"
 namespace SteamIRC {
 
 	CIRCContext::CIRCContext(std::string title) : title_(title) {

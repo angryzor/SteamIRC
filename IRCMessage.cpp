@@ -1,5 +1,6 @@
 #include <sstream>
 #include "IRCMessage.h"
+#include <xstring>
 
 // memdbgon must be the last include file in a .cpp file!!!
 #include "tier0/memdbgon.h"
@@ -68,7 +69,9 @@ namespace SteamIRC
 			if(tmp2[0] == ':') // This is a very special first character. It means that everything behind it,
 			{							  // including spaces, is part of this parameter.
 				tmp2 = tmp2.substr(1);
-				tmp2.append(" ");
+				std::getline(iss, tmp);
+				if(iss) tmp2 += tmp;
+/*				tmp2.append(" ");
 				
 				while(!iss.eof())
 				{
@@ -77,6 +80,7 @@ namespace SteamIRC
 					tmp2.append(" ");
 				}
 				tmp2 = tmp2.substr(0, tmp2.length() - 1);
+*/
 			}
 			AddParam(tmp2);
 		}

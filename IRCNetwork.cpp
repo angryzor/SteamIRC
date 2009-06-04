@@ -2,10 +2,11 @@
 #include "IRCNetwork.h"
 #include "IRCChannel.h"
 
+#include "tier0/memdbgon.h"
 namespace SteamIRC {
 
 	using namespace std;
-	CIRCNetwork::CIRCNetwork(std::string uri, CIRCEnvironment& env, IRCUserInfo& usr) : CIRCContextWithCommands(uri, env), usr_(usr)
+	CIRCNetwork::CIRCNetwork(std::string uri, CIRCEnvironment& env) : CIRCContextWithCommands(uri, env)
 	{
 	}
 
@@ -13,7 +14,7 @@ namespace SteamIRC {
 		IRCMessage reply;
 		switch(msg.Cmnd) {
 		case JOIN: // Actually join a channel (channel join succesful)
-			if(msg.Origin.nick != usr_.Nick) return CIRCContextWithCommands::AcceptIncoming(msg); // If this isn't a message about ourselves, then it's just someone else who joined a chnnel we're in.
+			if(msg.Origin.nick != env_.GetUInfo()->Nick) return CIRCContextWithCommands::AcceptIncoming(msg); // If this isn't a message about ourselves, then it's just someone else who joined a chnnel we're in.
 													   // In that case, this message should be handled by the channel context.
 			Join(msg.Parameters[0]);
 			break;
@@ -27,22 +28,22 @@ namespace SteamIRC {
 		case PRIVMSG:
 			if(msg.Parameters[0] != env_.GetUInfo()->Nick) return CIRCContextWithCommands::AcceptIncoming(msg);
 
-			buffer_ += "[";
+			buffer_ += "\x03" "04[";
 			buffer_ += msg.Origin.nick;
 			buffer_ += " ";
 			buffer_ += msg.Parameters[1];
-			buffer_ += "]\n-\n";
+			buffer_ += "]\x03\n-\n";
 			break;
 		case NOTICE:
 			if(    msg.Parameters[0] != env_.GetUInfo()->Nick
 				&& msg.Parameters[0] != "AUTH") return CIRCContextWithCommands::AcceptIncoming(msg);
 
-			buffer_ += "-";
+			buffer_ += "\x03" "05-";
 			if(msg.Origin.nick == "") buffer_ += msg.Origin.addr;
 			else buffer_ += msg.Origin.nick;
 			buffer_ += "- ";
 			buffer_ += msg.Parameters[1];
-			buffer_ += "\n-\n";
+			buffer_ += "\x03\n-\n";
 			break;
 		case RPL_WELCOME:
 		case RPL_YOURHOST:

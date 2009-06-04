@@ -6,6 +6,7 @@ namespace SteamIRC {
 
 	IRCGui::IRCGui(CreateInterfaceFn interfaceFactory, CIRCEnvironment& env) throw(std::runtime_error) : panel_(NULL), vguiEngine_(NULL), vguiScheme_(NULL), env_(env)
 	{
+		InitializeCriticalSection(&cs);
 		vguiEngine_ = (IEngineVGui *)interfaceFactory(VENGINE_VGUI_VERSION, NULL);
 		if(vguiEngine_)
 			Msg(" Got reference to VGUI engine! (%x)\r\n", vguiEngine_);
@@ -28,27 +29,36 @@ namespace SteamIRC {
 
 	IRCGui::~IRCGui(void)
 	{
+		DestroyPanel();
+		DeleteCriticalSection(&cs);
 	}
 
 	void IRCGui::CreatePanel(void) throw(std::logic_error) {
+		EnterCriticalSection(&cs);
 		if(panel_) throw std::logic_error("Panel already created");
 
 		Msg( "vguiEngine PANEL_GAMEUIDLL = %d\r\n", vguiEngine_->GetPanel( PANEL_GAMEUIDLL ));
 
 		panel_ = new CIRCPanel(vguiEngine_->GetPanel( PANEL_GAMEUIDLL ), vguiEngine_, vguiScheme_, env_, vguiLocalize_);
+		LeaveCriticalSection(&cs);
 	}
 
 	void IRCGui::DestroyPanel(void) {
+		Msg("gui");
+		EnterCriticalSection(&cs);
 		if(!panel_) return;
 
 		delete panel_;
 		panel_ = NULL;
+		LeaveCriticalSection(&cs);
 
 	}
 
 	void IRCGui::Update() {
+		EnterCriticalSection(&cs);
 		if(panel_)
 			panel_->Update();
+		LeaveCriticalSection(&cs);
 	}
 
 }

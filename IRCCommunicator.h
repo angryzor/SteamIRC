@@ -11,7 +11,7 @@ namespace SteamIRC {
 	public:
 		virtual bool UserInput(const std::string& txt);
 		virtual bool AcceptIncoming(const IRCMessage& msg);
-//		virtual void ProcessUserCommand(std::string cmnd, std::istringstream& params);
+		virtual bool ProcessUserCommand(std::string cmnd, std::istringstream& params);
 		virtual ~CIRCCommunicator(void);
 	protected:
 		CIRCCommunicator(std::string id, CIRCEnvironment& env);

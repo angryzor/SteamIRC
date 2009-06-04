@@ -1,7 +1,7 @@
 #pragma once
 
 #include "engine/iserverplugin.h"
-//#include "ienginevgui.h"
+#include "IRC.h"
 
 /******************************************************************
 * The plugin class. This is just nearly literally copied from the *

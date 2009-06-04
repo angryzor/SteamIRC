@@ -1,5 +1,6 @@
 #include "IRCChannelUser.h"
 
+#include "tier0/memdbgon.h"
 namespace SteamIRC {
 	IRCChannelUser::IRCChannelUser(std::string nick) {
 		ParseDecoratedNick(nick);

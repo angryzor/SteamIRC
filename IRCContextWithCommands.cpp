@@ -1,6 +1,7 @@
 #include "IRCContextWithCommands.h"
 #include <algorithm>
 
+#include "tier0/memdbgon.h"
 namespace SteamIRC {
 
 	CIRCContextWithCommands::CIRCContextWithCommands(std::string title, CIRCEnvironment& env) : CIRCContext(title), env_(env)
@@ -35,11 +36,11 @@ namespace SteamIRC {
 		case NOTICE:
 			if(msg.Parameters[0] != env_.GetUInfo()->Nick) return false;
 
-			buffer_ += "-";
+			buffer_ += "\x03" "05-";
 			buffer_ += msg.Origin.nick;
 			buffer_ += "- ";
 			buffer_ += msg.Parameters[1];
-			buffer_ += "\n";
+			buffer_ += "\x03\n";
 			break;
 		case RPL_AWAY:
 			if(msg.Parameters[0] != env_.GetUInfo()->Nick) return false;
