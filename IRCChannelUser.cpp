@@ -18,6 +18,14 @@ namespace SteamIRC {
 		return decs_;
 	}
 
+	void IRCChannelUser::SetNick(std::string nick) {
+		nick_ = nick;
+	}
+
+	void IRCChannelUser::SetDecorations(std::string decos) {
+		decs_ = decos;
+	}
+
 	void IRCChannelUser::ParseDecoratedNick(std::string nick) {
 		if(!(   (nick[0] >= 65 && nick[0] <= 93)
 			|| (nick[0] >= 97 && nick[0] <= 125))) {

@@ -23,7 +23,7 @@ namespace SteamIRC
 		env_.Send(msg);
 	}
 	
-	bool CIRCChannel::AcceptIncoming(const IRCMessage& msg) {
+	CIRCContext::AcceptReturnValue CIRCChannel::AcceptIncoming(const IRCMessage& msg) {
 		IRCMessage reply;
 		std::string tmp;
 		std::istringstream iss;
@@ -75,7 +75,7 @@ namespace SteamIRC
 				}
 				buffer_ += "\x03\n";
 			}
-			return CIRCCommunicator::AcceptIncoming(msg);
+			return ARV_PROCESSED_BUT_CONTINUE;
 		case NOTICE:
 			if(msg.Parameters[0] != id_) return CIRCCommunicator::AcceptIncoming(msg);
 
@@ -86,6 +86,26 @@ namespace SteamIRC
 			buffer_ += "- ";
 			buffer_ += msg.Parameters[1];
 			buffer_ += "\x03\n";
+			break;
+		case KICK:
+			if(msg.Parameters[0] != id_) return CIRCCommunicator::AcceptIncoming(msg);
+
+			EraseNick(msg.Parameters[1]);
+
+			if(msg.Parameters[1] == env_.GetUInfo()->Nick) DestroyChannel();
+			else {
+				buffer_ += "\x03" "03* ";
+				buffer_ += msg.Parameters[1];
+				buffer_ += " was kicked by ";
+				buffer_ += msg.Origin.nick;
+				buffer_ += ".";
+				if(msg.Parameters.size() > 2) {
+					buffer_ += " (";
+					buffer_ += msg.Parameters[2];
+					buffer_ += ")";
+				}
+				buffer_ += "\x03\n";
+			}
 			break;
 		case TOPIC:
 			if(msg.Parameters[0] != id_) return CIRCCommunicator::AcceptIncoming(msg);
@@ -122,6 +142,11 @@ namespace SteamIRC
 			reply.AddParam(id_);
 			env_.Send(reply);
 			break;
+		case NICK:
+			if((iter = FindByNick(msg.Origin.nick)) != chanfolk_.end()) {
+				iter->SetNick(msg.Parameters[0]);
+			}
+			return CIRCCommunicator::AcceptIncoming(msg);
 		case RPL_TOPIC:
 			if(msg.Parameters[0] != env_.GetUInfo()->Nick
 				|| msg.Parameters[1] != id_) return CIRCCommunicator::AcceptIncoming(msg);
@@ -168,12 +193,53 @@ namespace SteamIRC
 		default:
 			return CIRCCommunicator::AcceptIncoming(msg);
 		}
-		return true;
+		return ARV_PROCESSED;
 	}
 
 	bool CIRCChannel::ProcessUserCommand(const std::string& cmnd, std::istringstream& params) {
 		if(cmnd == "part" || cmnd == "leave") {
 			Part(params);
+			return true;
+		}
+		if(cmnd == "kick") {
+			std::string name;
+			std::string reason;
+			if(!(params >> name)) throw std::runtime_error("USAGE: /kick <user> [<reason>]");
+			IRCMessage msg(KICK);
+			msg.AddParam(id_);
+			msg.AddParam(name);
+			if(std::getline(params, reason))
+				msg.AddParam(reason.substr(1));
+			env_.Send(msg);
+			return true;
+		}
+		if(cmnd == "mode") {
+			std::string tmp;
+			IRCMessage msg(MODE);
+			msg.AddParam(id_);
+			if(!(params >> tmp)) throw std::runtime_error("USAGE: /mode [<mode commands>]");
+			do {
+				msg.AddParam(tmp);
+			} while(params >> tmp);
+			env_.Send(msg);
+			return true;
+		}
+		if(cmnd == "topic") {
+			std::string topic;
+			if(!std::getline(params, topic)) throw std::runtime_error("USAGE: /topic <topic>");
+			IRCMessage msg(TOPIC);
+			msg.AddParam(id_);
+			msg.AddParam(topic.substr(1));
+			env_.Send(msg);
+			return true;
+		}
+		if(cmnd == "invite") {
+			std::string other;
+			if(!std::getline(params, other)) throw std::runtime_error("USAGE: /invite <target nick>");
+			IRCMessage msg(INVITE);
+			msg.AddParam(other);
+			msg.AddParam(id_);
+			env_.Send(msg);
 			return true;
 		}
 		return CIRCCommunicator::ProcessUserCommand(cmnd, params);

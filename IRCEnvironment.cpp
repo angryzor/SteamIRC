@@ -17,21 +17,32 @@ namespace SteamIRC
 
 	void CIRCEnvironment::ProcessReceived(const IRCMessage& msg)
 	{
-		if(act_->AcceptIncoming(msg)) {
+		CIRCContext::AcceptReturnValue val(act_->AcceptIncoming(msg));
+		bool was_processed(false);
+		if(val == CIRCContext::ARV_PROCESSED) {
 			gui_->Update();
 			return;
 		}
-		for(context_set::const_iterator i = ctxts_.begin(); i != ctxts_.end(); i++)
-			if((*i)->AcceptIncoming(msg)) {
+		if(val == CIRCContext::ARV_PROCESSED_BUT_CONTINUE) was_processed = true;
+
+		for(context_set::const_iterator i = ctxts_.begin(); i != ctxts_.end(); i++) {
+			if(*i == act_) continue;
+
+			val = (*i)->AcceptIncoming(msg);
+			if(val == CIRCContext::ARV_PROCESSED) {
 				gui_->Update();
 				return;
 			}
+			if(val == CIRCContext::ARV_PROCESSED_BUT_CONTINUE) was_processed = true;
+		}
+
 		gui_->Update();
-		Warning("Received unprocessed message!!! | %s\r\n", msg.GetString().c_str());
+		if(!was_processed) Warning("Received unprocessed message!!! | %s\r\n", msg.GetString().c_str());
 	}
 
 	void CIRCEnvironment::Send(const IRCMessage& msg) const
 	{
+//		Msg("Sending: %s\r\n", msg.GetString(false).c_str());
 		conn_->Send(msg);
 	}
 
@@ -91,6 +102,13 @@ namespace SteamIRC
 
 	IRCUserInfo* CIRCEnvironment::GetUInfo() {
 		return &uInfo_;
+	}
+
+	bool CIRCEnvironment::ContextExists(std::string title) {
+		for(context_set::const_iterator i = ctxts_.begin(); i != ctxts_.end(); i++)
+			if((*i)->GetTitle() == title)
+				return true;
+		return false;
 	}
 
 	CIRCEnvironment::~CIRCEnvironment(void)

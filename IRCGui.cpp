@@ -1,4 +1,5 @@
 #include "IRCGui.h"
+#include "CSLock.h"
 
 #include "tier0/memdbgon.h"
 
@@ -34,31 +35,27 @@ namespace SteamIRC {
 	}
 
 	void IRCGui::CreatePanel(void) throw(std::logic_error) {
-		EnterCriticalSection(&cs);
+		CSLock csl(cs);
 		if(panel_) throw std::logic_error("Panel already created");
 
 		Msg( "vguiEngine PANEL_GAMEUIDLL = %d\r\n", vguiEngine_->GetPanel( PANEL_GAMEUIDLL ));
 
-		panel_ = new CIRCPanel(vguiEngine_->GetPanel( PANEL_GAMEUIDLL ), vguiEngine_, vguiScheme_, env_, vguiLocalize_);
-		LeaveCriticalSection(&cs);
+		panel_ = new CIRCPanel(vguiEngine_->GetPanel( PANEL_GAMEUIDLL ), vguiEngine_, vguiScheme_, env_, vguiLocalize_, *this);
 	}
 
 	void IRCGui::DestroyPanel(void) {
-		Msg("gui");
-		EnterCriticalSection(&cs);
+		CSLock csl(cs);
 		if(!panel_) return;
 
 		delete panel_;
 		panel_ = NULL;
-		LeaveCriticalSection(&cs);
 
 	}
 
 	void IRCGui::Update() {
-		EnterCriticalSection(&cs);
+		CSLock csl(cs);
 		if(panel_)
 			panel_->Update();
-		LeaveCriticalSection(&cs);
 	}
 
 }

@@ -32,6 +32,7 @@ namespace SteamIRC
 		void SetUInfo(IRCUserInfo& uInfo);
 		IRCUserInfo* GetUInfo();
 		virtual ~CIRCEnvironment(void);
+		bool ContextExists(std::string title);
 		void Cleanup();
 	private:
 		CIRCEnvironment& operator=(CIRCEnvironment&);

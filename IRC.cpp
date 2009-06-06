@@ -21,12 +21,24 @@ namespace SteamIRC {
 
 	IRC::IRC(	CreateInterfaceFn interfaceFactory) : ircClient_(NULL), gui_(NULL), tRecv_(NULL), runRecv(false)
 	{
-		Msg(" Starting GUI system...\r\n");
-		gui_ = new IRCGui(interfaceFactory, ircEnv_); 
-		ircEnv_.SetGui(gui_);
+		try {
+			Msg(" Starting GUI system...\r\n");
+			gui_ = new IRCGui(interfaceFactory, ircEnv_); 
+			ircEnv_.SetGui(gui_);
 
-		Msg(" Booting networking system...\r\n");
-		ircClient_ = sockEngine_.MakeIRCClient(ircEnv_);
+			Msg(" Booting networking system...\r\n");
+			ircClient_ = sockEngine_.MakeIRCClient(ircEnv_);
+		}
+		catch(std::runtime_error err)
+		{
+			Warning(err.what());
+			throw std::runtime_error("Boot failed!");
+		}
+		catch(std::logic_error err)
+		{
+			Warning(err.what());
+			throw std::runtime_error("Boot failed!");
+		}
 	}
 
 	void IRC::Connect(std::string hosturi, std::string port, IRCUserInfo& uInfo) {
@@ -42,16 +54,31 @@ namespace SteamIRC {
 		{
 			Warning(err.what());
 		}
+		catch(std::logic_error err)
+		{
+			Warning(err.what());
+		}
 	}
 
 	void IRC::Disconnect() {
-		if(runRecv) {
-			// Alert the recvthread that it should stop processing messages and wait for it to finish
-			runRecv = false;
-			WaitForSingleObject(tRecv_,INFINITE);
+		try {
+			if(runRecv) {
+				// Alert the recvthread that it should stop processing messages and wait for it to finish
+				runRecv = false;
+				WaitForSingleObject(tRecv_,INFINITE);
 
-			ircClient_->Disconnect();
-			ircEnv_.Cleanup();
+				ircClient_->Disconnect();
+				ircEnv_.Cleanup();
+				gui_->Update();
+			}
+		}
+		catch(std::runtime_error err) {
+			Warning(err.what());
+			return;
+		}
+		catch(std::logic_error err) {
+			Warning(err.what());
+			return;
 		}
 	}
 
@@ -60,6 +87,10 @@ namespace SteamIRC {
 			gui_->CreatePanel();
 			gui_->Update();
 		}
+		catch(std::runtime_error err) {
+			Warning(err.what());
+			return;
+		}
 		catch(std::logic_error err) {
 			Warning(err.what());
 			return;
@@ -67,14 +98,22 @@ namespace SteamIRC {
 	}
 
 	void IRC::HideGUI() {
-		gui_->DestroyPanel();
+		try {
+			gui_->DestroyPanel();
+		}
+		catch(std::runtime_error err) {
+			Warning(err.what());
+			return;
+		}
+		catch(std::logic_error err) {
+			Warning(err.what());
+			return;
+		}
 	}
 
 	IRC::~IRC(void)
 	{
 		Disconnect();
-
-		Msg("irc");
 
 		if(gui_){
 			gui_->DestroyPanel();
@@ -83,7 +122,6 @@ namespace SteamIRC {
 		if(ircClient_){
 			delete ircClient_;
 		}
-		Msg("irc2");
 	}
 
 }

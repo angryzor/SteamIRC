@@ -9,6 +9,8 @@ namespace SteamIRC {
 		std::string GetDecoratedNick() const;
 		std::string GetNick() const;
 		std::string GetDecorations() const;
+		void SetNick(std::string nick);
+		void SetDecorations(std::string decos);
 		void ParseDecoratedNick(std::string nick);
 		virtual ~IRCChannelUser(void);
 		bool operator<(const IRCChannelUser& Other) const;

@@ -11,6 +11,7 @@
 #include "IRCChannel.h"
 #include <string>
 #include <sstream>
+#include "IRCGui.h"
 // memdbgon must be the last include file in a .cpp file!!! 
 #include "tier0/memdbgon.h"
 
@@ -20,15 +21,16 @@ namespace SteamIRC {
 		nullstream(): std::ios(0), std::ostream(0) {}
 	};
 
-	CIRCPanel::CIRCPanel( vgui::VPANEL parent, IEngineVGui* vguiEngine,	ISchemeManager* vguiScheme, CIRCEnvironment& env, ILocalize* loc)
-		: BaseClass( NULL, "IRCPanel" ), scheme_(vguiScheme), env_(env), loc_(loc)
+	CIRCPanel::CIRCPanel( vgui::VPANEL parent, IEngineVGui* vguiEngine,	ISchemeManager* vguiScheme, CIRCEnvironment& env, ILocalize* loc, IRCGui& gui)
+		: BaseClass( NULL, "IRCPanel" ), scheme_(vguiScheme), env_(env), loc_(loc), gui_(gui)
 	{
 		SetParent(parent);
+		SetAutoDelete(false);
 		SetProportional( true );
 		SetTitleBarVisible( true );
 		SetMinimizeButtonVisible( false );
 		SetMaximizeButtonVisible( false );
-		SetCloseButtonVisible( false );
+		SetCloseButtonVisible( true );
 		SetSizeable( true );
 		SetMoveable( true );
 		SetVisible( true );
@@ -41,17 +43,16 @@ namespace SteamIRC {
 		ListPanel* cfolk = static_cast<ListPanel*>(FindChildByName("ChanFolkList"));
 		if(cfolk) {
 			cfolk->AddColumnHeader(0, "Names", "#SteamIRC_IRC_ChannelUserList", 73, 3);
+			cfolk->SetColumnHeaderHeight(vguiScheme->GetProportionalScaledValueEx(GetScheme(), 20));
 		}
-	//	LoadControlSettings("Resource/UI/TestPanel.res");
-	//	CenterThisPanelOnScreen();//keep in mind, hl2 supports widescreen 
-
-		//Other useful options
-		//SetSizeable(false);
-		//SetMoveable(false);
 	}
 
 	CIRCPanel::~CIRCPanel() {}
 	void CIRCPanel::OnCommand(const char* pcCommand) {
+		if(strcmp(pcCommand, "Close") == 0) {
+			Close();
+		}
+		if(!env_.GetActiveContext()) return;
 		if(strcmp(pcCommand, "Send") == 0) {
 			TextEntry* msgf = static_cast<TextEntry*>(FindChildByName("MessageField"));
 			if(msgf) {
@@ -102,8 +103,6 @@ namespace SteamIRC {
 
 
 	void CIRCPanel::Update() {
-		if(!env_.GetActiveContext()) return;
-
 		UpdateChannelName();
 		UpdateOutputField();
 		UpdateChanFolkList();
@@ -112,8 +111,12 @@ namespace SteamIRC {
 	void CIRCPanel::UpdateChannelName() {
 		Label* lbl = static_cast<Label*>(FindChildByName("ChannelName"));
 		if(!lbl) return;
-		
-		lbl->SetText(env_.GetActiveContext()->GetTitle().c_str());
+		if(env_.GetActiveContext()) {		
+			lbl->SetText(env_.GetActiveContext()->GetTitle().c_str());
+		}
+		else {
+			lbl->SetText("#SteamIRC_IRC_Empty");
+		}
 	}
  
 	Color CIRCPanel::ColorPick(std::string& tmp, std::string::size_type& loc) {
@@ -186,6 +189,10 @@ namespace SteamIRC {
 		if(!out) return;
 
 		out->SetText("");
+		out->InsertColorChange(Color(0xb2,0xb2,0xb2,0xff));
+		if(!env_.GetActiveContext()) return;
+
+
 		std::string tmp(env_.GetActiveContext()->GetBuffer());
 		std::ostringstream oss;
 
@@ -231,12 +238,18 @@ namespace SteamIRC {
 		delete [] buf;
 	}
 
+	void CIRCPanel::OnClose() {
+		gui_.DestroyPanel();
+	}
+
 	void CIRCPanel::UpdateChanFolkList() {
 		ListPanel* cfolk = static_cast<ListPanel*>(FindChildByName("ChanFolkList"));
 		if(!cfolk) return;
 
-		CIRCChannel* chan;
 		cfolk->DeleteAllItems();
+		if(!env_.GetActiveContext()) return;	
+
+		CIRCChannel* chan;
 		if(!(chan = dynamic_cast<CIRCChannel*>(env_.GetActiveContext()))) return;
 		
 		CIRCChannel::chanfolk_set* rcfolk(chan->GetChanFolk());
@@ -246,7 +259,7 @@ namespace SteamIRC {
 			cfolk->AddItem(kv, 0, false, false);
 			kv->deleteThis();
 		}
-		cfolk->SortList();
+//		cfolk->SortList();
 	}
 
 	

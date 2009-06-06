@@ -24,6 +24,10 @@ namespace SteamIRC {
 		return true;
 	}
 
+	void CIRCCommunicator::SetID(std::string id) {
+		id_ = id;
+	}
+
 	bool CIRCCommunicator::ProcessUserCommand(std::string cmnd, std::istringstream& params) {
 		if(cmnd == "me") {
 			std::string tmp;
@@ -41,40 +45,45 @@ namespace SteamIRC {
 				buffer_ += tmp;
 				buffer_ += "\x03\n";
 			}
+			else throw std::runtime_error("USAGE: /me <does something>");
 			return true;
 		}
-		return false;
+		return CIRCContextWithCommands::ProcessUserCommand(cmnd, params);
 	}
 
-	bool CIRCCommunicator::AcceptIncoming(const IRCMessage& msg) {
+	CIRCContext::AcceptReturnValue CIRCCommunicator::AcceptIncoming(const IRCMessage& msg) {
 		switch(msg.Cmnd) {
 		case PRIVMSG: 
 			{
 				if(msg.Parameters[0] != id_) return CIRCContextWithCommands::AcceptIncoming(msg);
 
-				std::istringstream iss(msg.Parameters[1]);
-				std::string tmp;
-				if((iss >> tmp) && (tmp == "\x01" "ACTION") && std::getline(iss,tmp)) {
-					buffer_ += "\x03" "06* ";
-					buffer_ += msg.Origin.nick;
-					buffer_ += tmp;
-					buffer_ += "\x03\n";
-				}
-				else {
-					buffer_ += "<";
-					buffer_ += msg.Origin.nick;
-					buffer_ += "> ";
-
-					buffer_ += msg.Parameters[1];
-					buffer_ += "\n";
-				}
+				Message(msg.Origin.nick, msg.Parameters[1]);
 			}
 			break;
 		default:
 			return CIRCContextWithCommands::AcceptIncoming(msg);
 		}
-		return true;
+		return ARV_PROCESSED;
 	}
+
+	void CIRCCommunicator::Message(std::string from, std::string msg) {
+		std::istringstream iss(msg);
+		std::string tmp;
+		if((iss >> tmp) && (tmp == "\x01" "ACTION") && std::getline(iss,tmp)) {
+			buffer_ += "\x03" "06* ";
+			buffer_ += from;
+			buffer_ += tmp;
+			buffer_ += "\x03\n";
+		}
+		else {
+			buffer_ += "<";
+			buffer_ += from;
+			buffer_ += "> ";
+			buffer_ += msg;
+			buffer_ += "\n";
+		}
+	}
+
 
 	CIRCCommunicator::~CIRCCommunicator(void)
 	{

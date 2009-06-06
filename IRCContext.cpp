@@ -14,6 +14,10 @@ namespace SteamIRC {
 		return title_;
 	}
 
+	void CIRCContext::SetTitle(std::string newT) {
+		title_ = newT;
+	}
+
 	CIRCContext::~CIRCContext(void)
 	{
 	}

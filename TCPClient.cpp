@@ -19,7 +19,7 @@ namespace SteamIRC
 			infoHints.ai_protocol = IPPROTO_TCP;
 		}
 
-		void CTCPClient::Connect(std::string hosturi, std::string port) throw(std::runtime_error)
+		void CTCPClient::Connect(std::string hosturi, std::string port) throw(std::logic_error, std::runtime_error)
 		{
 			if(sock != INVALID_SOCKET) throw std::logic_error(_T("Connection already established!"));
 			addrinfo* results;

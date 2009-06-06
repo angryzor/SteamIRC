@@ -1,6 +1,6 @@
-#include "eiface.h"
 #include "IRCClient.h"
 #include "IRCNetwork.h"
+#include "CSLock.h"
 #include <xstring>
 
 // memdbgon must be the last include file in a .cpp file!!!
@@ -55,7 +55,6 @@ namespace SteamIRC
 		}
 
 		for(vector<IRCMessage>::const_iterator i = msgs.begin(); i != msgs.end(); i++) {
-			Msg("RAW: %s\r\n", i->GetString().c_str());
 			env_.ProcessReceived(*i);
 		}
 	}
@@ -81,7 +80,6 @@ namespace SteamIRC
 			std::istringstream iss(rStr, istringstream::in);
 			std::string line;
 			while(!(std::getline(iss, line).eof())){
-				Msg("NOW INSERTING: %s\r\n", line.c_str());
 				res.insert(res.end(), line);
 			}
 			leftOverCmnd = line;
@@ -94,9 +92,8 @@ namespace SteamIRC
 	void CIRCClient::Send(const IRCMessage& msg)
 	{
 		std::string tmp = msg.GetString(false);
-		EnterCriticalSection(&csSend);
+		CSLock csl(csSend);
 		CTCPClient::Send(tmp);
-		LeaveCriticalSection(&csSend);
 	}
 
 	void CIRCClient::Disconnect(void)

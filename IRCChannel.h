@@ -14,7 +14,7 @@ namespace SteamIRC
 		CIRCChannel(CIRCEnvironment& env, std::string name);
 		virtual ~CIRCChannel(void);
 //		virtual bool UserInput(std::string txt);
-		virtual bool AcceptIncoming(const IRCMessage& msg);
+		virtual AcceptReturnValue AcceptIncoming(const IRCMessage& msg);
 		void Part(std::istream& params);
 		chanfolk_set* GetChanFolk();
 		virtual bool ProcessUserCommand(const std::string& cmnd, std::istringstream& params);

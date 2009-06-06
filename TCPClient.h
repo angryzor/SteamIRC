@@ -16,7 +16,7 @@ namespace SteamIRC
 		{
 		public:
 			CTCPClient(void);
-			virtual void Connect(std::string hosturi, std::string port) throw(std::runtime_error);
+			virtual void Connect(std::string hosturi, std::string port) throw(std::logic_error, std::runtime_error);
 			virtual void Send(const std::string& data);
 			virtual std::string Recv(void);
 			virtual bool CheckRecv();

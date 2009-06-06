@@ -54,6 +54,14 @@ bool CSteamIRCPlugin::Load(	CreateInterfaceFn interfaceFactory, CreateInterfaceF
 		DisconnectTier1Libraries( );
 		return false;
 	}
+	catch(std::logic_error err) {
+		Warning(err.what());
+		Warning("Aborting.\r\n");
+		DisconnectTier3Libraries( );
+		DisconnectTier2Libraries( );
+		DisconnectTier1Libraries( );
+		return false;
+	}
 
 	Msg(" Registering ConVars...\r\n");
 	ConVar_Register( 0 );
