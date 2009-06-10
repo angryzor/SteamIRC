@@ -87,6 +87,7 @@ namespace SteamIRC {
 		ListPanel* cfolk = static_cast<ListPanel*>(FindChildByName("ChanFolkList"));
 		TextEntry* msgf = static_cast<TextEntry*>(FindChildByName("MessageField"));
 		Button* send = static_cast<Button*>(FindChildByName("send"));
+		Button* closer = static_cast<Button*>(FindChildByName("CloseBtn"));
 		if(!cfolk || !msgf || !send) return;
 
 		int wide = this->GetWide();
@@ -99,6 +100,8 @@ namespace SteamIRC {
 		msgf->GetPos(x,y);
 		msgf->SetPos(x,tall - scheme_->GetProportionalScaledValueEx(GetScheme(), 24));
 		send->SetPos(wide - scheme_->GetProportionalScaledValueEx(GetScheme(), 95), tall - scheme_->GetProportionalScaledValueEx(GetScheme(), 24));
+		closer->GetPos(x,y);
+		closer->SetPos(wide - scheme_->GetProportionalScaledValueEx(GetScheme(), 20), y);
 	}
 
 
