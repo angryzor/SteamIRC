@@ -1,6 +1,8 @@
 #include <sstream>
 #include "IRCMessage.h"
 #include <xstring>
+#include "logging.h"
+#include <boost/logging/format/named_write.hpp>
 
 // memdbgon must be the last include file in a .cpp file!!!
 #include "tier0/memdbgon.h"
@@ -22,6 +24,7 @@ namespace SteamIRC
 	}
 	void IRCMessage::ProcessString(const std::string& msgStr)
 	{
+		L_ << "IRCMessage::ProcessString() - About to process string " << msgStr;
 		// A plain text message string is converted to and saved into this IRCMessage here
 		
 		// I'll be using an istringstream here, they're fun to parse simple stuff with :)

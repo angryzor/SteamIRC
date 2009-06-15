@@ -19,7 +19,7 @@ namespace SteamIRC
 	{
 	public:
 		CIRCClient(CIRCEnvironment& env);
-		virtual void Connect(std::string hosturi, std::string port, IRCUserInfo& uInfo);
+		virtual void Connect(std::string hosturi, std::string port, IRCUserInfo& uInfo, std::string pass = "");
 		virtual void DoRecv();
 		virtual std::vector<std::string> TransformToVector(std::string rStr);
 		virtual void Send(const IRCMessage& msg);

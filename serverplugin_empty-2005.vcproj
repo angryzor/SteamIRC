@@ -158,7 +158,7 @@
 				InlineFunctionExpansion="2"
 				EnableIntrinsicFunctions="true"
 				FavorSizeOrSpeed="1"
-				AdditionalIncludeDirectories="&quot;C:\Users\Ruben Tytgat\Documents\Source Mod Projects\IRC Viewer\common&quot;;&quot;C:\Users\Ruben Tytgat\Documents\Source Mod Projects\IRC Viewer\public&quot;;&quot;C:\Users\Ruben Tytgat\Documents\Source Mod Projects\IRC Viewer\public\tier0&quot;;&quot;C:\Users\Ruben Tytgat\Documents\Source Mod Projects\IRC Viewer\public\tier1&quot;;&quot;C:\Users\Ruben Tytgat\Documents\Source Mod Projects\IRC Viewer\game\server&quot;;&quot;C:\Users\Ruben Tytgat\Documents\Source Mod Projects\IRC Viewer\game\shared&quot;"
+				AdditionalIncludeDirectories="&quot;G:\RTMyDocs\Source Mod Projects\IRC Viewer\common&quot;;&quot;G:\RTMyDocs\Source Mod Projects\IRC Viewer\public&quot;;&quot;G:\RTMyDocs\Source Mod Projects\IRC Viewer\public\tier0&quot;;&quot;G:\RTMyDocs\Source Mod Projects\IRC Viewer\public\tier1&quot;;&quot;G:\RTMyDocs\Source Mod Projects\IRC Viewer\game\server&quot;;&quot;G:\RTMyDocs\Source Mod Projects\IRC Viewer\game\shared&quot;"
 				PreprocessorDefinitions="WIN32;_WIN32;NDEBUG;_WINDOWS;_USRDLL;_CRT_SECURE_NO_DEPRECATE;_CRT_NONSTDC_NO_DEPRECATE;serverplugin_emptyONLY;_MBCS;_SCL_SECURE_NO_WARNINGS"
 				StringPooling="true"
 				ExceptionHandling="1"
@@ -175,7 +175,7 @@
 				GenerateXMLDocumentationFiles="false"
 				BrowseInformation="0"
 				BrowseInformationFile="$(IntDir)/"
-				WarningLevel="4"
+				WarningLevel="3"
 				Detect64BitPortabilityProblems="false"
 				DebugInformationFormat="3"
 				CompileAs="2"
@@ -201,7 +201,7 @@
 				OutputFile="$(OutDir)/SteamIRC.dll"
 				LinkIncremental="1"
 				SuppressStartupBanner="true"
-				AdditionalLibraryDirectories="&quot;C:\Users\Ruben Tytgat\Documents\Source Mod Projects\IRC Viewer\lib\common&quot;;&quot;C:\Users\Ruben Tytgat\Documents\Source Mod Projects\IRC Viewer\lib\public&quot;"
+				AdditionalLibraryDirectories="&quot;G:\RTMyDocs\Source Mod Projects\IRC Viewer\lib\common&quot;;&quot;G:\RTMyDocs\Source Mod Projects\IRC Viewer\lib\public&quot;"
 				GenerateManifest="false"
 				IgnoreDefaultLibraryNames="libc;libcd;libcmtd"
 				GenerateDebugInformation="true"
@@ -241,7 +241,7 @@
 			/>
 			<Tool
 				Name="VCPostBuildEventTool"
-				CommandLine="copy /Y /B &quot;C:\Users\Ruben Tytgat\Documents\Visual Studio 2008\Projects\SteamIRC\Release\SteamIRC.dll&quot; &quot;C:\Program Files (x86)\Steam\steamapps\angryzor1\team fortress 2\tf\addons&quot;"
+				CommandLine="copy /Y /B &quot;G:\RTMyDocs\Visual Studio 2008\Projects\SteamIRC\Release\SteamIRC.dll&quot; &quot;D:\Program Files\Steam\steamapps\angryzor1\team fortress 2\tf\addons&quot;"
 				ExcludedFromBuild="false"
 			/>
 		</Configuration>
@@ -511,6 +511,14 @@
 		</File>
 		<File
 			RelativePath=".\IRC.h"
+			>
+		</File>
+		<File
+			RelativePath=".\logging.cpp"
+			>
+		</File>
+		<File
+			RelativePath=".\logging.h"
 			>
 		</File>
 	</Files>

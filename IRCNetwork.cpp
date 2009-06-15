@@ -52,6 +52,11 @@ namespace SteamIRC {
 			buffer_ += msg.Parameters[1];
 			buffer_ += "\x03\n-\n";
 			break;
+		case NICK:
+			if(msg.Origin.nick != env_.GetUInfo()->Nick) return CIRCContextWithCommands::AcceptIncoming(msg);
+
+			env_.GetUInfo()->Nick = msg.Parameters[0];
+			return CIRCContextWithCommands::AcceptIncoming(msg);
 		case MODE:
 			if(msg.Parameters[0] != env_.GetUInfo()->Nick) return CIRCContextWithCommands::AcceptIncoming(msg);
 

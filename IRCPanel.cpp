@@ -12,6 +12,9 @@
 #include <string>
 #include <sstream>
 #include "IRCGui.h"
+#include "logging.h"
+#include <boost/logging/format/named_write.hpp>
+
 // memdbgon must be the last include file in a .cpp file!!! 
 #include "tier0/memdbgon.h"
 
@@ -24,6 +27,7 @@ namespace SteamIRC {
 	CIRCPanel::CIRCPanel( vgui::VPANEL parent, IEngineVGui* vguiEngine,	ISchemeManager* vguiScheme, CIRCEnvironment& env, ILocalize* loc, IRCGui& gui)
 		: BaseClass( NULL, "IRCPanel" ), scheme_(vguiScheme), env_(env), loc_(loc), gui_(gui)
 	{
+		L_ << "CIRCPanel::CIRCPanel() - About to build a new panel";
 		SetParent(parent);
 		SetAutoDelete(false);
 		SetProportional( true );
@@ -45,15 +49,21 @@ namespace SteamIRC {
 			cfolk->AddColumnHeader(0, "Names", "#SteamIRC_IRC_ChannelUserList", 73, 3);
 			cfolk->SetColumnHeaderHeight(vguiScheme->GetProportionalScaledValueEx(GetScheme(), 20));
 		}
+		L_ << "CIRCPanel::CIRCPanel() - New panel built";
 	}
 
-	CIRCPanel::~CIRCPanel() {}
+	CIRCPanel::~CIRCPanel() {
+		L_ << "CIRCPanel::~CIRCPanel() - Destroying panel";
+	
+	}
 	void CIRCPanel::OnCommand(const char* pcCommand) {
 		if(strcmp(pcCommand, "Close") == 0) {
+			L_ << "CIRCPanel::OnCommand() - Cmnd: Close";
 			Close();
 		}
 		if(!env_.GetActiveContext()) return;
 		if(strcmp(pcCommand, "Send") == 0) {
+			L_ << "CIRCPanel::OnCommand() - Cmnd: Send";
 			TextEntry* msgf = static_cast<TextEntry*>(FindChildByName("MessageField"));
 			if(msgf) {
 				char msg[501];
@@ -63,6 +73,7 @@ namespace SteamIRC {
 			}
 		}
 		if(strcmp(pcCommand, "Next") == 0) {
+			L_ << "CIRCPanel::OnCommand() - Cmnd: Next";
 			CIRCEnvironment::context_set* ctxts = env_.GetContexts();
 			CIRCEnvironment::context_set::iterator i = ctxts->find(env_.GetActiveContext());
 			i++;
@@ -71,6 +82,7 @@ namespace SteamIRC {
 			env_.GetGui()->Update();
 		}
 		if(strcmp(pcCommand, "Prev") == 0) {
+			L_ << "CIRCPanel::OnCommand() - Cmnd: Prev";
 			CIRCEnvironment::context_set* ctxts = env_.GetContexts();
 			CIRCEnvironment::context_set::iterator i = ctxts->find(env_.GetActiveContext());
 			if(i == ctxts->begin()) {
@@ -84,6 +96,8 @@ namespace SteamIRC {
 
 	void CIRCPanel::PerformLayout() {
 		Frame::PerformLayout();
+
+		L_ << "CIRCPanel::PerformLayout() - Repositioning";
 		ListPanel* cfolk = static_cast<ListPanel*>(FindChildByName("ChanFolkList"));
 		TextEntry* msgf = static_cast<TextEntry*>(FindChildByName("MessageField"));
 		Button* send = static_cast<Button*>(FindChildByName("send"));
@@ -106,12 +120,15 @@ namespace SteamIRC {
 
 
 	void CIRCPanel::Update() {
+		L_ << "CIRCPanel::Update() - Updating panel";
 		UpdateChannelName();
 		UpdateOutputField();
 		UpdateChanFolkList();
+		L_ << "CIRCPanel::Update() - Update complete";
 	}
 
 	void CIRCPanel::UpdateChannelName() {
+		L_ << "CIRCPanel::Update() - -Updating channel name";
 		Label* lbl = static_cast<Label*>(FindChildByName("ChannelName"));
 		if(!lbl) return;
 		if(env_.GetActiveContext()) {		
@@ -188,6 +205,7 @@ namespace SteamIRC {
 	}
 
 	void CIRCPanel::UpdateOutputField() {
+		L_ << "CIRCPanel::Update() - -Updating channel output field";
 		RichText* out = static_cast<RichText*>(FindChildByName("OutputField"));
 		if(!out) return;
 
@@ -242,10 +260,12 @@ namespace SteamIRC {
 	}
 
 	void CIRCPanel::OnClose() {
+		L_ << "CIRCPanel::OnClose() - Panel destroyed through close routine";
 		gui_.DestroyPanel();
 	}
 
 	void CIRCPanel::UpdateChanFolkList() {
+		L_ << "CIRCPanel::Update() - -Updating channel users list";
 		ListPanel* cfolk = static_cast<ListPanel*>(FindChildByName("ChanFolkList"));
 		if(!cfolk) return;
 

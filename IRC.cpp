@@ -41,10 +41,10 @@ namespace SteamIRC {
 		}
 	}
 
-	void IRC::Connect(std::string hosturi, std::string port, IRCUserInfo& uInfo) {
+	void IRC::Connect(std::string hosturi, std::string port, IRCUserInfo& uInfo, std::string pass) {
 		try {
 			// Connect our client
-			ircClient_->Connect(hosturi, port, uInfo);
+			ircClient_->Connect(hosturi, port, uInfo, pass);
 
 			// Create the receive thread
 			runRecv = true;

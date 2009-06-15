@@ -5,6 +5,8 @@
 #include "tier2/tier2.h"
 #include "tier3/tier3.h"
 #include <stdexcept>
+#include "logging.h"
+#include <boost/logging/format/named_write.hpp>
 
 // memdbgon must be the last include file in a .cpp file!!!
 #include "tier0/memdbgon.h"
@@ -13,11 +15,15 @@ using namespace SteamIRC;
 static SteamIRC::IRC* irc = NULL;
 static int improvisedSemaphore = 0;
 
-static ConVar irc_nick("irc_nickname", "angryzor", 0, "The nickname you will be using on IRC servers.");
+void HandleLoggingChange( IConVar *var, const char *pOldValue, float flOldValue );
+
+static ConVar irc_nick("irc_nickname", "IIzPro", 0, "The nickname you will be using on IRC servers.");
 static ConVar irc_user("irc_username", "tf2player1215", 0, "Your username for the IRC server. Is only displayed in WHOIS queries.");
 static ConVar irc_real_name("irc_real_name", "Heavy Weapons Guy", 0, "Your real name. Is only displayed in WHOIS queries.");
 static ConVar irc_hostname("irc_hostname", "irc.quakenet.org", 0, "The IRC host to connect to on next \"irc_connect\" call.");
 static ConVar irc_hostport("irc_host_port", "6667", 0, "Port number to connect to. Mostly in the range of 6666-6669");
+static ConVar irc_hostpass("irc_host_pass", "", 0, "Password for the IRC server. Most servers don't use this.");
+static ConVar irc_enable_logging("irc_enable_logging", "1", 0, "Enable logging. Logging is quite verbose and might have a performance impact.", &HandleLoggingChange);
 
 CSteamIRCPlugin::CSteamIRCPlugin(void) : m_iClientCommandIndex(0)
 {
@@ -35,11 +41,14 @@ bool CSteamIRCPlugin::Load(	CreateInterfaceFn interfaceFactory, CreateInterfaceF
 	ConnectTier3Libraries( &interfaceFactory, 1 );
 
 	Msg("======================= SteamIRC v0.1a =======================\r\n");
-	Msg(" Build 0009\r\n");
+	Msg(" Build 0012\r\n");
 	Msg(" Written by angryzor\r\n");
 	Msg("--------------------------------------------------------------\r\n");
 	Msg(" Booting...\r\n");
 	improvisedSemaphore++;
+	Msg(" Initializing logging system...\r\n");
+	init_logging();
+
 	try { 
 		if(irc)
 			throw std::runtime_error("Already an instance of the irc provider running!!!");
@@ -216,7 +225,7 @@ CON_COMMAND( irc_connect, "Connects to an IRC server" )
 									8,
 									irc_real_name.GetString()};
 
-	irc->Connect(irc_hostname.GetString(), irc_hostport.GetString(), uInfo);
+	irc->Connect(irc_hostname.GetString(), irc_hostport.GetString(), uInfo, irc_hostpass.GetString());
 }
 
 CON_COMMAND( irc_disconnect, "Disconnects from IRC server" )
@@ -234,3 +243,19 @@ CON_COMMAND( irc_guihide, "Destroys the irc GUI" )
 	irc->HideGUI();
 }
 
+void HandleLoggingChange( IConVar *var, const char *pOldValue, float flOldValue ) {
+	ConVar* cvar = dynamic_cast<ConVar*>(var);
+	if(!cvar) {
+		Warning("Non-convar passed to convar change handler. No changes were made.");
+		return;
+	}
+
+	if(cvar->GetInt() == 0) {
+		L_ << "--- LOGGING DISABLED ---";
+		g_l_filter()->set_enabled(false);
+	}
+	else {
+		g_l_filter()->set_enabled(true);
+		L_ << "--- LOGGING ENABLED  ---";
+	}
+}

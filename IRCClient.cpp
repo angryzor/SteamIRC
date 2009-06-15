@@ -2,6 +2,8 @@
 #include "IRCNetwork.h"
 #include "CSLock.h"
 #include <xstring>
+#include "logging.h"
+#include <boost/logging/format/named_write.hpp>
 
 // memdbgon must be the last include file in a .cpp file!!!
 #include "tier0/memdbgon.h"
@@ -15,10 +17,17 @@ namespace SteamIRC
 		env_.SetConnection(this);
 	}
 
-	void CIRCClient::Connect(std::string hosturi, std::string port, IRCUserInfo& uInfo)
+	void CIRCClient::Connect(std::string hosturi, std::string port, IRCUserInfo& uInfo, std::string pass)
 	{
 		// Connect to the IRC server on hosturi:port
 		CTCPClient::Connect(hosturi, port);
+
+		// Send a server password if we need one
+		if(pass != "") {
+			IRCMessage msg(PASS);
+			msg.AddParam(pass);
+			Send(msg);
+		}
 
 		// Send the login data
 		IRCMessage msg(NICK);
@@ -45,6 +54,8 @@ namespace SteamIRC
 		std::string rStr = CTCPClient::Recv(); // This will block until info is received
 		vector<std::string> cmnds;
 		vector<IRCMessage> msgs;
+
+		L_ << "CIRCClient::DoRecv() - Received raw data: " << rStr;
 		
 		cmnds = TransformToVector(rStr);
 
@@ -92,13 +103,17 @@ namespace SteamIRC
 	void CIRCClient::Send(const IRCMessage& msg)
 	{
 		std::string tmp = msg.GetString(false);
-		CSLock csl(csSend);
-		CTCPClient::Send(tmp);
+		L_ << "CIRCClient::Send() <- About to send message: " << tmp;
+		{
+			CSLock csl(csSend);
+			CTCPClient::Send(tmp);
+		}
+		L_ << "CIRCClient::Send() ->";
 	}
 
 	void CIRCClient::Disconnect(void)
 	{
-		CTCPClient::Send(std::string("QUIT :SteamIRC v0.1a disconnecting\r\n"));
+		CTCPClient::Send(std::string("QUIT :SteamIRC v0.1a -- http://home.scarlet.be/~rt022830/\r\n"));
 		CTCPClient::Disconnect();
 	}
 		

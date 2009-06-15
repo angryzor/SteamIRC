@@ -1,5 +1,7 @@
 #include "IRCGui.h"
 #include "CSLock.h"
+#include "logging.h"
+#include <boost/logging/format/named_write.hpp>
 
 #include "tier0/memdbgon.h"
 
@@ -25,7 +27,7 @@ namespace SteamIRC {
 
 
 		// Load localizations
-		vguiLocalize_->AddFile("resource/UI/steamirc_%language%.txt", "GAME");
+		vguiLocalize_->AddFile("resource/steamirc_%language%.txt", "GAME");
 	}
 
 	IRCGui::~IRCGui(void)
@@ -35,27 +37,38 @@ namespace SteamIRC {
 	}
 
 	void IRCGui::CreatePanel(void) throw(std::logic_error) {
-		CSLock csl(cs);
-		if(panel_) throw std::logic_error("Panel already created");
+		L_ << "CIRCGui::CreatePanel() <-";
+		{
+			CSLock csl(cs);
+			if(panel_) throw std::logic_error("Panel already created");
 
-		Msg( "vguiEngine PANEL_GAMEUIDLL = %d\r\n", vguiEngine_->GetPanel( PANEL_GAMEUIDLL ));
+			Msg( "vguiEngine PANEL_GAMEUIDLL = %d\r\n", vguiEngine_->GetPanel( PANEL_GAMEUIDLL ));
 
-		panel_ = new CIRCPanel(vguiEngine_->GetPanel( PANEL_GAMEUIDLL ), vguiEngine_, vguiScheme_, env_, vguiLocalize_, *this);
+			panel_ = new CIRCPanel(vguiEngine_->GetPanel( PANEL_GAMEUIDLL ), vguiEngine_, vguiScheme_, env_, vguiLocalize_, *this);
+		}
+		L_ << "CIRCGui::CreatePanel() ->";
 	}
 
 	void IRCGui::DestroyPanel(void) {
-		CSLock csl(cs);
-		if(!panel_) return;
+		L_ << "CIRCGui::DestroyPanel() <-";
+		{
+			CSLock csl(cs);
+			if(!panel_) return;
 
-		delete panel_;
-		panel_ = NULL;
-
+			delete panel_;
+			panel_ = NULL;
+		}
+		L_ << "CIRCGui::DestroyPanel() ->";
 	}
 
 	void IRCGui::Update() {
-		CSLock csl(cs);
-		if(panel_)
-			panel_->Update();
+		L_ << "CIRCGui::Update() <-";
+		{
+			CSLock csl(cs);
+			if(panel_)
+				panel_->Update();
+		}
+		L_ << "CIRCGui::Update() ->";
 	}
 
 }

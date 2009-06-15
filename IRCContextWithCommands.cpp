@@ -35,10 +35,12 @@ namespace SteamIRC {
 	bool CIRCContextWithCommands::ProcessUserCommand(const std::string& cmnd, std::istringstream& params) {
 		if(cmnd == "join") {
 			std::string chan;
-			if(!(params >> chan)) throw std::runtime_error("USAGE: /join #channame");
+			std::string key;
+			if(!(params >> chan)) throw std::runtime_error("USAGE: /join #channame [key]");
 
 			IRCMessage msg(JOIN);
 			msg.AddParam(chan);
+			if(params >> key) msg.AddParam(key);
 
 			env_.Send(msg);
 			return true;

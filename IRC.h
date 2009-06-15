@@ -15,7 +15,7 @@ namespace SteamIRC {
 		friend DWORD WINAPI recvthread(void* lpThreadParameter);
 	public:
 		IRC(	CreateInterfaceFn interfaceFactory);
-		void Connect(std::string hosturi, std::string port, IRCUserInfo& uInfo);
+		void Connect(std::string hosturi, std::string port, IRCUserInfo& uInfo, std::string pass = "");
 		void ShowGUI();
 		void HideGUI();
 		void Disconnect();

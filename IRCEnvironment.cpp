@@ -4,6 +4,8 @@
 #include "IRCNetwork.h"
 #include "IRCGui.h"
 #include "IRCMessage.h"
+#include "logging.h"
+#include <boost/logging/format/named_write.hpp>
 
 // memdbgon must be the last include file in a .cpp file!!!
 #include "tier0/memdbgon.h"
@@ -17,6 +19,7 @@ namespace SteamIRC
 
 	void CIRCEnvironment::ProcessReceived(const IRCMessage& msg)
 	{
+		L_ << "CIRCEnvironment::ProcessReceived() - About to process message " << msg.GetString();
 		CIRCContext::AcceptReturnValue val(act_->AcceptIncoming(msg));
 		bool was_processed(false);
 		if(val == CIRCContext::ARV_PROCESSED) {
