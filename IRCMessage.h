@@ -22,7 +22,7 @@ namespace SteamIRC
 		USERHOST = 642, ISON = 643, 
 		// NUMERIC REPLIES
 		// Command responses
-		RPL_WELCOME = 1, RPL_YOURHOST = 2, RPL_CREATED = 3, RPL_MYINFO = 4, RPL_BOUNCE = 5,
+		RPL_WELCOME = 1, RPL_YOURHOST = 2, RPL_CREATED = 3, RPL_MYINFO = 4, RPL_ISUPPORT = 5, // RPL_BOUNCE = 5, // sometime, somehow, for some shady reason, people started using num 5 as a list of supported features instead of a redirect
 
 		RPL_USERHOST = 302, RPL_ISON = 303, RPL_AWAY = 301, RPL_UNAWAY = 305, RPL_NOWAWAY = 306,
 		RPL_WHOISUSER = 311, RPL_WHOISSERVER = 312, RPL_WHOISOPERATOR = 313, RPL_WHOISIDLE = 317,
