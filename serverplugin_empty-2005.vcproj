@@ -282,10 +282,6 @@
 			</File>
 		</Filter>
 		<Filter
-			Name="Link Libraries"
-			>
-		</Filter>
-		<Filter
 			Name="Header Files"
 			>
 		</Filter>
@@ -366,6 +362,22 @@
 				<Filter
 					Name="Messages"
 					>
+					<File
+						RelativePath=".\CommandParse.cpp"
+						>
+					</File>
+					<File
+						RelativePath=".\CommandParse.h"
+						>
+					</File>
+					<File
+						RelativePath=".\enumparse.cpp"
+						>
+					</File>
+					<File
+						RelativePath=".\enumparse.h"
+						>
+					</File>
 					<File
 						RelativePath=".\IRCMessage.cpp"
 						>
@@ -484,17 +496,13 @@
 		<Filter
 			Name="Base Object"
 			>
-			<File
-				RelativePath=".\Object.cpp"
-				>
-			</File>
-			<File
-				RelativePath=".\Object.h"
-				>
-			</File>
 		</Filter>
 		<Filter
 			Name="Colors"
+			>
+		</Filter>
+		<Filter
+			Name="Link Libraries"
 			>
 		</Filter>
 		<File
@@ -511,6 +519,10 @@
 		</File>
 		<File
 			RelativePath=".\IRC.h"
+			>
+		</File>
+		<File
+			RelativePath=".\ircmessages.h"
 			>
 		</File>
 		<File

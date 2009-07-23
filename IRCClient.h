@@ -14,11 +14,13 @@
 namespace SteamIRC
 {
 	using namespace WinSock2;
+	class CIRCWinSock2;
+
 	class CIRCClient :
 		public CTCPClient
 	{
+		friend CIRCWinSock2;
 	public:
-		CIRCClient(CIRCEnvironment& env);
 		virtual void Connect(std::string hosturi, std::string port, IRCUserInfo& uInfo, std::string pass = "");
 		virtual void DoRecv();
 		virtual std::vector<std::string> TransformToVector(std::string rStr);
@@ -30,6 +32,8 @@ namespace SteamIRC
 		std::string leftOverCmnd;
 		CRITICAL_SECTION csSend;
 		CIRCEnvironment& env_;
+	protected:
+		CIRCClient(CIRCEnvironment& env);
 	};
 }
 

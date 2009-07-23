@@ -1,8 +1,7 @@
-#include "tier2/tier2.h"
 #include "TCPClient.h"
+#include <string>
 
 #define TCP_RECV_BUF_LEN 512
-#include "eiface.h"
 
 // memdbgon must be the last include file in a .cpp file!!!
 #include "tier0/memdbgon.h"
@@ -41,8 +40,7 @@ namespace SteamIRC
 			}
 			catch(std::runtime_error err) {
 				freeaddrinfo(results);
-				Warning(err.what());
-				throw std::runtime_error("Connection failed.");
+				throw std::runtime_error(std::string(err.what()) + _T("\r\nConnection failed."));
 			}
 
 			try {
@@ -70,11 +68,11 @@ namespace SteamIRC
 			}
 			catch(std::runtime_error err) {
 				Warning(err.what());
-				throw std::runtime_error("Connection failed.");
+				throw std::runtime_error(std::string(err.what()) + _T("\r\nConnection failed."));
 			}
 		}
 
-		void CTCPClient::Send(const std::string& data)
+		void CTCPClient::Send(const std::string& data) throw(std::logic_error, std::runtime_error)
 		{
 			try
 			{
@@ -85,15 +83,18 @@ namespace SteamIRC
 				res = send(sock, data.c_str(), data.length(), NULL);
 				if(res == SOCKET_ERROR)
 				{
-					throw std::logic_error(_T("Can't send data"));
+					throw std::runtime_error(_T("Can't send data"));
 				}
 			}
 			catch(std::logic_error err) {
-				Warning((std::string(_T("Sending error: ")) + err.what()).c_str());
+				throw std::logic_error(std::string(_T("Sending error: ")) + err.what());
+			}
+			catch(std::runtime_error err) {
+				throw std::runtime_error(std::string(_T("Sending error: ")) + err.what());
 			}
 		}
 
-		std::string CTCPClient::Recv()
+		std::string CTCPClient::Recv() throw(std::logic_error, std::runtime_error)
 		{
 			try
 			{
@@ -106,18 +107,20 @@ namespace SteamIRC
 				res = recv(sock, buf, TCP_RECV_BUF_LEN, NULL);
 				if(res == SOCKET_ERROR)
 				{
-					throw std::logic_error(_T("Can't recieve data"));
+					throw std::runtime_error(_T("Can't recieve data"));
 				}
 
 				return buf;
 			}
 			catch(std::logic_error err) {
-				Warning((std::string(_T("Receiving error: ")) + err.what()).c_str());
-				return "";
+				throw std::logic_error(std::string(_T("Receiving error: ")) + err.what());
+			}
+			catch(std::runtime_error err) {
+				throw std::runtime_error(std::string(_T("Receiving error: ")) + err.what());
 			}
 		}
 
-		bool CTCPClient::CheckRecv()
+		bool CTCPClient::CheckRecv() throw(std::logic_error, std::runtime_error)
 		{
 			try
 			{
@@ -128,7 +131,7 @@ namespace SteamIRC
 
 				res = ioctlsocket(sock, FIONREAD, &size);
 				if(res == SOCKET_ERROR)
-					throw std::logic_error(_T("Can't recieve data"));
+					throw std::runtime_error(_T("Can't recieve data"));
 
 				if(size <= 0)
 					return false;
@@ -136,8 +139,10 @@ namespace SteamIRC
 				return true;
 			}
 			catch(std::logic_error err) {
-				Warning((std::string(_T("Receiving error: ")) + err.what()).c_str());
-				return false;
+				throw std::logic_error(std::string(_T("Receiving error: ")) + err.what());
+			}
+			catch(std::runtime_error err) {
+				throw std::runtime_error(std::string(_T("Receiving error: ")) + err.what());
 			}
 		}
 

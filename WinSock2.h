@@ -2,15 +2,16 @@
 
 #include <winsock2.h>
 #include <ws2tcpip.h>
-#include "Object.h"
-#include "WS2Exception.h"
+
+#include <stdexcept>
+
 #include "TCPClient.h"
 
 namespace SteamIRC
 {
 	namespace WinSock2
 	{
-		class CWinSock2 : public Object
+		class CWinSock2
 		{
 		public:
 			CWinSock2(void) throw(std::runtime_error);

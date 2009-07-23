@@ -135,114 +135,21 @@ namespace SteamIRC
 
 	Command IRCMessage::LookupStringToCommand(const std::string& str) const 
 	{
-//==========================================================
-// D= D= D= D=     D= D= D= D=
-// OH NOES!!! TIZ CODE IS TEH UGLYZ!!! TIS CLEARLY POOR DESIGN!!!
-// REPAIR ASAP!!!
-//==========================================================
-		if(str.compare("PASS") == 0) return PASS;
-		if(str.compare("NICK") == 0) return NICK;
-		if(str.compare("USER") == 0) return USER;
-		if(str.compare("OPER") == 0) return OPER;
-		if(str.compare("MODE") == 0) return MODE;
-		if(str.compare("SERVICE") == 0) return SERVICE;
-		if(str.compare("QUIT") == 0) return QUIT;
-		if(str.compare("SQUIT") == 0) return SQUIT;
-		if(str.compare("JOIN") == 0) return JOIN;
-		if(str.compare("PART") == 0) return PART;
-		if(str.compare("TOPIC") == 0) return TOPIC;
-		if(str.compare("NAMES") == 0) return NAMES;
-		if(str.compare("LIST") == 0) return LIST;
-		if(str.compare("INVITE") == 0) return INVITE;
-		if(str.compare("KICK") == 0) return KICK;
-		if(str.compare("PRIVMSG") == 0) return PRIVMSG;
-		if(str.compare("NOTICE") == 0) return NOTICE;
-		if(str.compare("MOTD") == 0) return MOTD;
-		if(str.compare("LUSERS") == 0) return LUSERS;
-		if(str.compare("VERSION") == 0) return VERSION;
-		if(str.compare("STATS") == 0) return STATS;
-		if(str.compare("LINKS") == 0) return LINKS;
-		if(str.compare("TIME") == 0) return TIME;
-		if(str.compare("CONNECT") == 0) return CONNECT;
-		if(str.compare("TRACE") == 0) return TRACE;
-		if(str.compare("ADMIN") == 0) return ADMIN;
-		if(str.compare("INFO") == 0) return INFO;
-		if(str.compare("SQUERY") == 0) return SQUERY;
-		if(str.compare("WHO") == 0) return WHO;
-		if(str.compare("WHOIS") == 0) return WHOIS;
-		if(str.compare("WHOWAS") == 0) return WHOWAS;
-		if(str.compare("KILL") == 0) return KILL;
-		if(str.compare("PING") == 0) return PING;
-		if(str.compare("PONG") == 0) return PONG;
-		if(str.compare("ERROR") == 0) return ERROR_;
-		if(str.compare("AWAY") == 0) return AWAY;
-		if(str.compare("REHASH") == 0) return REHASH;
-		if(str.compare("DIE") == 0) return DIE;
-		if(str.compare("RESTART") == 0) return RESTART;
-		if(str.compare("SUMMON") == 0) return SUMMON;
-		if(str.compare("USERS") == 0) return USERS;
-		if(str.compare("WALLOPS") == 0) return WALLOPS;
-		if(str.compare("USERHOST") == 0) return USERHOST;
-		if(str.compare("ISON") == 0) return ISON;
 		std::istringstream iss;
 		unsigned short tmp = 0;
-		iss >> tmp;
-		return static_cast<Command>(tmp);
+		iss >> std::dec >> tmp;
+		if(iss) return static_cast<Command>(tmp);
+		else return command_parser_.get_enum(str);
 	}
 
 	std::string IRCMessage::LookupCommandToString(Command cmd) const
 	{
-		std::ostringstream oss;
-		switch(cmd)
-		{
-			case PASS: return "PASS";
-			case NICK: return "NICK";
-			case USER: return "USER";
-			case OPER: return "OPER";
-			case MODE: return "MODE";
-			case SERVICE: return "SERVICE";
-			case QUIT: return "QUIT";
-			case SQUIT: return "SQUIT";
-			case JOIN: return "JOIN";
-			case PART: return "PART";
-			case TOPIC: return "TOPIC";
-			case NAMES: return "NAMES";
-			case LIST: return "LIST";
-			case INVITE: return "INVITE";
-			case KICK: return "KICK";
-			case PRIVMSG: return "PRIVMSG";
-			case NOTICE: return "NOTICE";
-			case MOTD: return "MOTD";
-			case LUSERS: return "LUSERS";
-			case VERSION: return "VERSION";
-			case STATS: return "STATS";
-			case LINKS: return "LINKS";
-			case TIME: return "TIME";
-			case CONNECT: return "CONNECT";
-			case TRACE: return "TRACE";
-			case ADMIN: return "ADMIN";
-			case INFO: return "INFO";
-			case SQUERY: return "SQUERY";
-			case WHO: return "WHO";
-			case WHOIS: return "WHOIS";
-			case WHOWAS: return "WHOWAS";
-			case KILL: return "KILL";
-			case PING: return "PING";
-			case PONG: return "PONG";
-			case ERROR_: return "ERROR";
-			case AWAY: return "AWAY";
-			case REHASH: return "REHASH";
-			case DIE: return "DIE";
-			case RESTART: return "RESTART";
-			case SUMMON: return "SUMMON";
-			case USERS: return "USERS";
-			case WALLOPS: return "WALLOPS";
-			case USERHOST: return "USERHOST";
-			case ISON: return "ISON";
-			default:
-				oss << static_cast<unsigned short>(cmd);
-				return oss.str();
+		if(cmd < 600) {
+			std::ostringstream oss;
+			oss << static_cast<unsigned short>(cmd);
+			return oss.str();
 		}
+		else return command_parser_.get_string(cmd);
 	}
 
 	void IRCMessage::SetCommand(Command cmd)
@@ -259,4 +166,6 @@ namespace SteamIRC
 	IRCMessage::~IRCMessage(void)
 	{
 	}
+
+
 }
