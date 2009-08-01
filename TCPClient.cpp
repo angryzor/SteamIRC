@@ -157,5 +157,10 @@ namespace SteamIRC
 		{
 			if(sock != INVALID_SOCKET) Disconnect();
 		}
+
+		CTCPClient& CTCPClient::operator<<(const std::string& str) {
+			Send(str);
+			return *this;
+		}
 	}
 }

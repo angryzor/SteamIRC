@@ -23,12 +23,13 @@ namespace SteamIRC
 	public:
 		virtual void Connect(std::string hosturi, std::string port, IRCUserInfo& uInfo, std::string pass = "");
 		virtual void DoRecv();
-		virtual std::vector<std::string> TransformToVector(std::string rStr);
 		virtual void Send(const IRCMessage& msg);
 		virtual void Disconnect(void);
 		virtual ~CIRCClient(void);
+		CIRCClient& operator<<(const IRCMessage& msg) {
 	private:
 		CIRCClient& operator=(CIRCClient&);
+		virtual std::vector<std::string> TransformToVector(std::string rStr);
 		std::string leftOverCmnd;
 		CRITICAL_SECTION csSend;
 		CIRCEnvironment& env_;

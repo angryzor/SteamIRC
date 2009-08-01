@@ -40,8 +40,8 @@ bool CSteamIRCPlugin::Load(	CreateInterfaceFn interfaceFactory, CreateInterfaceF
 	ConnectTier2Libraries( &interfaceFactory, 1 );
 	ConnectTier3Libraries( &interfaceFactory, 1 );
 
-	Msg("======================= SteamIRC v0.1a =======================\r\n");
-	Msg(" Build 0012\r\n");
+	Msg("======================= SteamIRC v0.2a =======================\r\n");
+	Msg(" Build 0013\r\n");
 	Msg(" Written by angryzor\r\n");
 	Msg("--------------------------------------------------------------\r\n");
 	Msg(" Booting...\r\n");

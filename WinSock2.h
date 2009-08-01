@@ -18,6 +18,7 @@ namespace SteamIRC
 			CTCPClient* MakeTCPClient();
 			virtual ~CWinSock2(void);
 		private:
+			CWinSock2& operator=(CWinSock2&);
 			WSADATA wsaData;
 		};
 

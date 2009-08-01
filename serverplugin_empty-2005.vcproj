@@ -526,6 +526,14 @@
 			>
 		</File>
 		<File
+			RelativePath=".\IRCNetworkCaps.cpp"
+			>
+		</File>
+		<File
+			RelativePath=".\IRCNetworkCaps.h"
+			>
+		</File>
+		<File
 			RelativePath=".\logging.cpp"
 			>
 		</File>

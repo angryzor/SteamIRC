@@ -21,7 +21,9 @@ namespace SteamIRC
 			virtual bool CheckRecv() throw(std::logic_error, std::runtime_error);
 			virtual void Disconnect(void) throw(std::logic_error);
 			virtual ~CTCPClient(void);
+			CTCPClient& operator<<(const std::string& str);
 		private:
+			CTCPClient& operator=(CTCPClient&);
 			SOCKET sock;
 			addrinfo infoHints;
 		protected:

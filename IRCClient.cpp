@@ -121,5 +121,10 @@ namespace SteamIRC
 	{
 		DeleteCriticalSection(&csSend);
 	}
+
+	CIRCClient& CIRCClient::operator<<(const IRCMessage& msg) {
+		Send(msg);
+		return *this;
+	}
 }
 
